@@ -53,9 +53,6 @@ export default function TicketList({ tickets, showHeader = true }: TicketListPro
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Title
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -73,19 +70,21 @@ export default function TicketList({ tickets, showHeader = true }: TicketListPro
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created At
               </th>
-              <th scope="col" className="relative px-6 py-3">
-                <span className="sr-only">Actions</span>
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {tickets.map((ticket) => (
-              <tr key={ticket.ticket_id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  #{ticket.ticket_id}
-                </td>
+              <tr 
+                key={ticket.ticket_id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => window.location.href = `/tickets/${ticket.ticket_id}`}
+              >
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {ticket.title}
+                  <div>
+                    <span className="text-sm text-gray-500">#{ticket.ticket_id}</span>
+                    <br />
+                    {ticket.title}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[ticket.status].bg} ${statusColors[ticket.status].text}`}>
@@ -105,14 +104,6 @@ export default function TicketList({ tickets, showHeader = true }: TicketListPro
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(ticket.created_at).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link
-                    href={`/tickets/${ticket.ticket_id}`}
-                    className="text-indigo-600 hover:text-indigo-900"
-                  >
-                    View
-                  </Link>
                 </td>
               </tr>
             ))}
