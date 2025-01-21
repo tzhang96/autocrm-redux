@@ -9,5 +9,13 @@ export default async function RootPage() {
     redirect('/login')
   }
 
-  redirect('/dashboard')
+  // Get user role from metadata
+  const role = session.user.user_metadata?.role
+
+  // Redirect based on role
+  if (role === 'customer') {
+    redirect('/tickets')
+  } else {
+    redirect('/dashboard')
+  }
 }

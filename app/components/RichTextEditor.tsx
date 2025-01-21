@@ -1,11 +1,34 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
+import { BaseEditor, ReactEditor } from 'slate'
 
 interface RichTextEditorProps {
-  content: string
-  onChange: (content: string) => void
-  placeholder?: string
+  value: string;
+  onChange: (value: string) => void;
+  className?: string;
+}
+
+interface CustomElement {
+  type: string;
+  children: CustomText[];
+}
+
+interface CustomText {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+}
+
+type CustomEditor = BaseEditor & ReactEditor
+
+declare module 'slate' {
+  interface CustomTypes {
+    Editor: CustomEditor
+    Element: CustomElement
+    Text: CustomText
+  }
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
@@ -138,24 +161,21 @@ const MenuBar = ({ editor }: { editor: any }) => {
 }
 
 export default function RichTextEditor({
-  content,
+  value,
   onChange,
-  placeholder = 'Please provide as much detail as possible...',
+  className = 'min-h-[200px] w-full rounded-lg border border-gray-300 bg-white',
 }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-500 hover:text-blue-700 underline',
-        },
       }),
     ],
-    content,
+    content: value,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px]',
+        class: className,
       },
     },
     onUpdate: ({ editor }) => {

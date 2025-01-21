@@ -5,9 +5,9 @@ export type MessageVisibility = 'public' | 'internal'
 export type MessageType = 'text' | 'status_change' | 'assignment_change' | 'note' | 'system'
 
 export interface User {
-  user_id: string
+  id: string
   email: string
-  name: string
+  name: string | null
   role: UserRole
   created_at: string
   metadata: Record<string, any>
@@ -27,6 +27,8 @@ export interface Ticket {
   updated_at: string
   last_activity_at: string
   custom_fields: Record<string, any>
+  created_by_user?: User
+  assigned_to_user?: User
 }
 
 export interface Message {
@@ -43,14 +45,13 @@ export interface Message {
 }
 
 export interface Attachment {
-  attachment_id: string
-  message_id: string
-  file_name: string
-  file_type: string
-  file_size: number
-  storage_path: string
-  uploaded_at: string
-  metadata: Record<string, any>
+  id: string
+  ticket_id: string
+  filename: string
+  url: string
+  created_at: string
+  created_by: string
+  created_by_user?: User
 }
 
 // Types for database query filters
@@ -77,4 +78,19 @@ export interface MessageFilters {
   type?: MessageType
   limit?: number
   offset?: number
+}
+
+export interface Customer {
+  id: string
+  email: string
+  name: string | null
+}
+
+export interface Comment {
+  id: string
+  ticket_id: string
+  content: string
+  created_at: string
+  created_by: string
+  created_by_user?: User
 } 
