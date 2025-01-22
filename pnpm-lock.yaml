@@ -42,6 +42,9 @@ importers:
       '@autocrm/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@autocrm/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@autocrm/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -221,6 +224,12 @@ importers:
       '@heroicons/react':
         specifier: ^2.0.18
         version: 2.2.0(react@18.3.1)
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.18
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.5(@types/react@18.3.18)
       next:
         specifier: 14.0.4
         version: 14.0.4(@babel/core@7.26.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -231,12 +240,6 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.17.14
-      '@types/react':
-        specifier: ^18.2.0
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: ^18.2.0
-        version: 18.3.5(@types/react@18.3.18)
       eslint:
         specifier: ^8.0.0
         version: 8.57.1

@@ -6,7 +6,11 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["react", "react-dom", "node"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "moduleResolution": "node"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "references": [

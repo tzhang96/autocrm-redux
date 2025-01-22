@@ -10,12 +10,12 @@ export async function middleware(request: NextRequest) {
     },
     allowedPaths: [
       '/login',
-      '/signup',
       '/auth',
       '/unauthorized'
     ],
     roleBasedPaths: {
-      'customer': ['/tickets', '/profile']
+      'agent': ['/tickets', '/profile', '/dashboard'],
+      'admin': ['/tickets', '/profile', '/dashboard', '/settings']
     }
   })
 }

@@ -1,11 +1,18 @@
 import { CustomerAPI } from '@autocrm/api-client'
-import { TicketList } from '@autocrm/ui'
+import TicketList from '../components/TicketList'
 import { createServerSupabaseClient } from '@/utils/supabase'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 async function getCustomerTickets() {
-  const supabase = createServerSupabaseClient()
-  const customerApi = new CustomerAPI(supabase)
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user || !user.email) {
+    redirect('/login')
+  }
+
+  const customerApi = new CustomerAPI(supabase, user.email)
   return await customerApi.listMyTickets()
 }
 
@@ -30,7 +37,7 @@ export default async function TicketsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <TicketList tickets={tickets} />
+          <TicketList tickets={tickets} showHeader={false} />
         </div>
       </main>
     </div>

@@ -4,9 +4,7 @@ import { AuthConfig, UserRole } from './types'
 
 export async function updateSession(request: NextRequest, config: AuthConfig) {
   let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+    request,
   })
 
   const supabase = createServerClient(
@@ -14,26 +12,17 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: any) {
-          request.cookies.set({ name, value, ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
+            request,
           })
-          supabaseResponse.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          request.cookies.delete({ name, ...options })
-          supabaseResponse = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          supabaseResponse.cookies.delete({ name, ...options })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value)
+          )
         },
       },
     }
@@ -43,31 +32,33 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Check if path is in allowed paths
-  const path = request.nextUrl.pathname
-  if (config.allowedPaths?.includes(path)) {
-    return supabaseResponse
+  // If there's no user and the path isn't login or auth, redirect to login
+  if (
+    !user &&
+    !request.nextUrl.pathname.startsWith(config.redirects.signIn) &&
+    !request.nextUrl.pathname.startsWith('/auth')
+  ) {
+    const redirectUrl = request.nextUrl.clone()
+    redirectUrl.pathname = config.redirects.signIn
+    return NextResponse.redirect(redirectUrl)
   }
 
-  // Handle unauthenticated users
-  if (!user) {
+  // If user is logged in, check role-based access
+  if (user) {
+    const role = user.user_metadata?.role as UserRole || UserRole.CUSTOMER
+    const allowedPathsForRole = config.roleBasedPaths?.[role] || []
+
+    // If user has no allowed paths for their role, or the current path isn't in their allowed paths
     if (
-      !path.startsWith(config.redirects.signIn) &&
-      !path.startsWith('/auth')
+      allowedPathsForRole.length === 0 ||
+      !allowedPathsForRole.some(allowedPath => request.nextUrl.pathname.startsWith(allowedPath))
     ) {
-      const redirectUrl = new URL(config.redirects.signIn, request.url)
+      // If they're logged in but unauthorized, sign them out and redirect to login
+      await supabase.auth.signOut()
+      const redirectUrl = request.nextUrl.clone()
+      redirectUrl.pathname = config.redirects.signIn
       return NextResponse.redirect(redirectUrl)
     }
-    return supabaseResponse
-  }
-
-  // Get user role and check role-based access
-  const role = user.user_metadata?.role as UserRole || UserRole.CUSTOMER
-  const allowedPathsForRole = config.roleBasedPaths?.[role] || []
-
-  if (!allowedPathsForRole.some(allowedPath => path.startsWith(allowedPath))) {
-    const redirectUrl = new URL(config.redirects.unauthorized, request.url)
-    return NextResponse.redirect(redirectUrl)
   }
 
   return supabaseResponse
