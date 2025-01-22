@@ -1,19 +1,26 @@
 # Dependencies
-node_modules
-.pnpm-store/
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
 
 # Build outputs
-dist
-.next
-out
-build
+dist/
+**/dist/
+.next/
+**/.next/
+out/
+**/out/
+build/
+**/build/
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
 # Testing
-coverage
+coverage/
+**/coverage/
 
 # Debug
 npm-debug.log*
@@ -21,29 +28,70 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+**/.idea/
+**/.vscode/*
+
+# Turbo
+.turbo/
+**/.turbo/
+
+# Vercel
+.vercel/
+**/.vercel/
+
+# OS
+.DS_Store
+**/Thumbs.db
+**/.DS_Store
+
 # Environment
 .env
 .env.*
 !.env.example
+**/.env
+**/.env.*
 
-# IDE
-.idea
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
+# Cache
+.cache/
+**/.cache/
+**/webcache/
+**/webcache_*
+**/.webcache/
+**/__webcache__/
 
-# OS
-.DS_Store
-*.pem
+# Build artifacts
+*.log
+*.pid
+*.seed
+*.pid.lock
+.eslintcache
+.node_repl_history
 
-# Supabase
-.branches
-.temp
+# Package manager
+.npm/
+.yarn/
+yarn.lock
+package-lock.json
+**/package-lock.json
 
-# Turbo
-.turbo
+# Next.js specific
+**/.next/
+**/out/
+/build
+**/.vercel
+**/*.tsbuildinfo
+**/next-env.d.ts
+**/.swc/
 
-# Vercel
-.vercel 
+# Monorepo specific
+apps/**/public/workbox-*.js
+apps/**/public/sw.js
+apps/**/public/fallback-*.js
+
+# Development
+*.local
+.local/ 

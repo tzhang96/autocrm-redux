@@ -30,6 +30,17 @@ autocrm/
 │   │   └── types/              # Shared types
 │   │       └── index.ts        # Core type definitions
 │   │
+│   ├── auth/                    # Shared auth package (MVP essential)
+│   │   ├── src/
+│   │   │   ├── middleware.ts   # Shared middleware with role checks
+│   │   │   ├── server.ts      # Server-side utils
+│   │   │   ├── client.ts      # Client-side utils
+│   │   │   ├── types.ts       # Auth types + role enum
+│   │   │   └── guards/        # Role-based auth guards
+│   │   │       ├── staff.ts   # Staff-specific guards
+│   │   │       └── customer.ts # Customer-specific guards
+│   │   └── package.json
+│   │
 │   └── api-client/              # API wrappers (MVP essential)
 │       ├── customer.ts         # Customer operations
 │       └── staff.ts           # Staff operations
@@ -57,51 +68,89 @@ autocrm/
     - [x] Message operations
     - [x] Basic user operations
 
-### 3. API Client Setup (Day 2)
+### 3. Auth Package Setup (Day 2-3)
+- [ ] Set up packages/auth
+  - [ ] Core auth utilities
+    - [ ] Create auth types and role enum
+    - [ ] Implement createBrowserClient utility
+    - [ ] Implement createServerClient utility
+    - [ ] Set up cookie handling per Supabase guidelines
+  - [ ] Middleware implementation
+    - [ ] Base updateSession middleware
+    - [ ] Role-based route protection
+    - [ ] Configurable redirect paths
+  - [ ] Auth guards
+    - [ ] Staff role guard
+    - [ ] Customer role guard
+    - [ ] Admin role guard
+  - [ ] Tests
+    - [ ] Unit tests for utilities
+    - [ ] Integration tests for middleware
+    - [ ] Role guard tests
+
+### 4. API Client Setup (Day 3)
 - [ ] Set up packages/api-client
   - [x] Move CustomerAPI to api-client/customer
   - [ ] Create StaffAPI in api-client/staff
     - [ ] Basic ticket management methods
     - [ ] Basic message handling
+  - [ ] Integrate with auth package
+    - [ ] Add auth headers to requests
+    - [ ] Handle auth errors
+    - [ ] Role-based API access
 
-### 4. Customer Portal MVP (Day 3-4)
-- [ ] Set up apps/portal
-  - [ ] Basic Next.js setup
+### 5. Customer Portal MVP (Day 4)
+- [x] Set up apps/portal
+  - [x] Basic Next.js setup
   - [ ] Authentication integration
+    - [ ] Import and configure auth package
+    - [ ] Set up login/signup pages
+    - [ ] Implement customer-specific routes
+    - [ ] Add auth middleware
   - [ ] Core ticket features
     - [ ] View my tickets list
     - [ ] Create new ticket
     - [ ] View single ticket
     - [ ] Add reply to ticket
 
-### 5. Staff Dashboard MVP (Day 4-5)
-- [ ] Set up apps/dashboard
-  - [ ] Basic Next.js setup
+### 6. Staff Dashboard MVP (Day 4-5)
+- [x] Set up apps/dashboard
+  - [x] Basic Next.js setup
   - [ ] Authentication with role check
+    - [ ] Import and configure auth package
+    - [ ] Set up staff login page
+    - [ ] Implement staff-only routes
+    - [ ] Add role-based middleware
   - [ ] Core ticket management
     - [ ] View all tickets list
     - [ ] Basic ticket filtering
     - [ ] Handle single ticket
     - [ ] Reply to tickets
 
-### 6. Testing Essential Flows (Throughout)
+### 7. Testing Essential Flows (Throughout)
 - [ ] Core package tests
   - [ ] Database operation tests
   - [ ] API client tests
+  - [ ] Auth flow tests
 - [ ] Basic integration tests
   - [ ] Customer ticket creation flow
   - [ ] Staff ticket handling flow
   - [ ] Message threading flow
+  - [ ] Role-based access tests
 
-### 7. MVP Deployment Setup (Day 5)
+### 8. MVP Deployment Setup (Day 5)
 - [ ] Configure deployment
   - [ ] Environment variables
+    - [ ] Supabase configuration
+    - [ ] Auth configuration
+    - [ ] API endpoints
   - [ ] Build scripts
   - [ ] Basic CI setup
 - [ ] Deploy MVP
   - [ ] Deploy portal
   - [ ] Deploy dashboard
   - [ ] Verify core workflows
+  - [ ] Test auth flows in production
 
 ## Post-MVP Features
 - [ ] Enhanced filtering and search
@@ -113,10 +162,17 @@ autocrm/
 - [ ] Knowledge base integration
 - [ ] Email notifications
 - [ ] File attachments
+- [ ] Enhanced auth features
+  - [ ] Password reset flow
+  - [ ] Email verification
+  - [ ] OAuth providers
+  - [ ] Session management
+  - [ ] Rate limiting
 
 ## Notes
 - Focus on ticket management workflow first
 - Keep UI simple but functional for MVP
 - Test core functionality throughout
 - Only essential features in shared packages
-- Delay non-critical features until after MVP 
+- Delay non-critical features until after MVP
+- Auth package should be flexible enough to support future features 
