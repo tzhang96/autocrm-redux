@@ -58,25 +58,34 @@ export async function createTicket(
 
 export async function getTicket(
   supabase: SupabaseClient,
-  id: string
+  ticketId: string
 ): Promise<TicketWithUsers | null> {
   try {
-    const { data, error } = await supabase
+    console.log('Getting ticket with ID:', ticketId) // Debug log
+    const query = supabase
       .from('tickets')
-      .select(USER_FIELDS.select)
-      .eq('id', id)
+      .select('*')
+      .eq('ticket_id', ticketId)
       .single()
 
-    if (error) throw new DatabaseError('Failed to get ticket', 'getTicket', error)
+    console.log('Query:', query) // Debug the query
+    const { data, error } = await query
+
+    console.log('Ticket query result:', { data, error }) // Debug log with better formatting
+    if (error) {
+      console.error('Database error:', error) // Debug the error
+      throw new DatabaseError('Failed to get ticket', 'getTicket', error)
+    }
     return data
   } catch (error) {
+    console.error('Caught error:', error) // Debug any caught errors
     throw wrapDbError('getTicket', error)
   }
 }
 
 export async function updateTicket(
   supabase: SupabaseClient,
-  id: string,
+  ticketId: string,
   data: UpdateTicketData
 ): Promise<TicketWithUsers> {
   try {
@@ -91,8 +100,12 @@ export async function updateTicket(
         ...(data.tags && { tags: data.tags }),
         ...(data.customFields && { custom_fields: data.customFields })
       })
-      .eq('id', id)
-      .select(USER_FIELDS.select)
+      .eq('ticket_id', ticketId)
+      .select(`
+        *,
+        created_by_user:users!created_by_fkey(${USER_FIELDS.select}),
+        assigned_to_user:users!assigned_to_fkey(${USER_FIELDS.select})
+      `)
       .single()
 
     if (error) throw new DatabaseError('Failed to update ticket', 'updateTicket', error)
@@ -105,13 +118,13 @@ export async function updateTicket(
 
 export async function deleteTicket(
   supabase: SupabaseClient,
-  id: string
+  ticketId: string
 ): Promise<void> {
   try {
     const { error } = await supabase
       .from('tickets')
       .delete()
-      .eq('id', id)
+      .eq('ticket_id', ticketId)
 
     if (error) throw new DatabaseError('Failed to delete ticket', 'deleteTicket', error)
   } catch (error) {
@@ -126,7 +139,7 @@ export async function listTickets(
   try {
     let query = supabase
       .from('tickets')
-      .select(USER_FIELDS.select)
+      .select('*')  // Just select all ticket fields, no joins needed
       .order('created_at', { ascending: false })
 
     // Apply filters if provided
@@ -142,6 +155,9 @@ export async function listTickets(
     if (filters?.createdBy) {
       query = query.eq('created_by', filters.createdBy)
     }
+    if (filters?.customerEmail) {
+      query = query.eq('customer_email', filters.customerEmail)
+    }
     if (filters?.search) {
       query = query.or(
         `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%,customer_email.ilike.%${filters.search}%`
@@ -153,25 +169,31 @@ export async function listTickets(
 
     query = applyPagination(query, filters)
     const { data, error } = await query
+    console.log('Raw ticket data:', JSON.stringify(data, null, 2)) // Debug full ticket data
 
     if (error) throw new DatabaseError('Failed to list tickets', 'listTickets', error)
     return data || []
   } catch (error) {
+    console.error('List tickets error:', error) // Debug any errors
     throw wrapDbError('listTickets', error)
   }
 }
 
 export async function assignTicket(
   supabase: SupabaseClient,
-  id: string,
+  ticketId: string,
   userId?: string
 ): Promise<TicketWithUsers> {
   try {
     const { data: ticket, error } = await supabase
       .from('tickets')
       .update({ assigned_to: userId })
-      .eq('id', id)
-      .select(USER_FIELDS.select)
+      .eq('ticket_id', ticketId)
+      .select(`
+        *,
+        created_by_user:users!created_by_fkey(${USER_FIELDS.select}),
+        assigned_to_user:users!assigned_to_fkey(${USER_FIELDS.select})
+      `)
       .single()
 
     if (error) throw new DatabaseError('Failed to assign ticket', 'assignTicket', error)

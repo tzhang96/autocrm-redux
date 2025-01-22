@@ -1,8 +1,8 @@
 import { CustomerAPI } from '@autocrm/api-client'
-import TicketList from '../components/TicketList'
-import { createServerSupabaseClient } from '@/utils/supabase'
+import { createServerSupabaseClient } from '@/utils/supabase-server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { TicketListWrapper } from './_components/TicketListWrapper'
 
 async function getCustomerTickets() {
   const supabase = await createServerSupabaseClient()
@@ -12,8 +12,17 @@ async function getCustomerTickets() {
     redirect('/login')
   }
 
-  const customerApi = new CustomerAPI(supabase, user.email)
-  return await customerApi.listMyTickets()
+  console.log('Fetching tickets for user:', user.email) // Debug user
+
+  try {
+    const customerApi = new CustomerAPI(supabase, user.email)
+    const tickets = await customerApi.listMyTickets()
+    console.log('Retrieved tickets:', tickets.map(t => ({ id: t.id, title: t.title }))) // Debug tickets
+    return tickets
+  } catch (error) {
+    console.error('Error fetching tickets:', error)
+    return []
+  }
 }
 
 export default async function TicketsPage() {
@@ -37,7 +46,7 @@ export default async function TicketsPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <TicketList tickets={tickets} showHeader={false} />
+          <TicketListWrapper tickets={tickets} />
         </div>
       </main>
     </div>

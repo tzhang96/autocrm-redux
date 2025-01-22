@@ -6,11 +6,11 @@ export const DEFAULT_PAGE_SIZE = 10
 
 // Query field selectors
 export const USER_FIELDS = {
-  select: '*, created_by_user:users!tickets_created_by_fkey(id,email,name,role,created_at), assigned_to_user:users!tickets_assigned_to_fkey(id,email,name,role,created_at)'
+  select: 'user_id,email,name,role,created_at'
 } as const
 
 export const MESSAGE_FIELDS = {
-  select: '*, user:users(id,email,name,role,created_at)'
+  select: '*, user:users(user_id,email,name,role,created_at)'
 } as const
 
 // Query builders

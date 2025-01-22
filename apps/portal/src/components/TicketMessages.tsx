@@ -47,7 +47,7 @@ export default function TicketMessages({ ticketId, messages, customerApi }: Tick
                 <div key={message.id} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <p className="text-sm font-medium text-gray-900">
-                      {message.sender_email}
+                      {message.user_id}
                     </p>
                     <span className="text-xs text-gray-500">
                       {new Date(message.created_at).toLocaleString()}
@@ -56,6 +56,11 @@ export default function TicketMessages({ ticketId, messages, customerApi }: Tick
                   <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
                     {message.content}
                   </p>
+                  {message.is_ai_generated && (
+                    <span className="mt-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                      AI Generated
+                    </span>
+                  )}
                 </div>
               ))
             )}

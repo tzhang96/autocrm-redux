@@ -1,38 +1,43 @@
-'use client'
-
 import { CustomerAPI } from '@autocrm/api-client'
-import { TicketContent } from '@autocrm/ui'
-import { createSupabaseClient } from '@/utils/supabase'
-import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { Message, Ticket, MessageVisibility } from '@autocrm/core'
+import { createServerSupabaseClient } from '@/utils/supabase-server'
+import { redirect, notFound } from 'next/navigation'
+import { Message, Ticket } from '@autocrm/core'
+import { TicketDetailClient } from './_components/TicketDetailClient'
 
-export default function TicketPage() {
-  const params = useParams()
-  if (!params?.id) return null
+async function getTicketData(ticketId: string) {
+  if (!ticketId) {
+    return { ticket: null, messages: [], error: 'Invalid ticket ID' }
+  }
+
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
   
-  const ticketId = params.id as string
-  const customerApi = new CustomerAPI(createSupabaseClient())
-  const [ticket, setTicket] = useState<Ticket | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [error, setError] = useState<string | null>(null)
+  if (!user?.email) {
+    redirect('/login')
+  }
 
-  useEffect(() => {
-    async function loadTicket() {
-      try {
-        const [ticketData, messagesData] = await Promise.all([
-          customerApi.getMyTicket(ticketId),
-          customerApi.getTicketMessages(ticketId)
-        ])
-        setTicket(ticketData)
-        setMessages(messagesData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load ticket')
-      }
-    }
+  const customerApi = new CustomerAPI(supabase, user.email)
+  const ticket = await customerApi.getMyTicket(ticketId)
+  
+  if (!ticket) {
+    return { ticket: null, messages: [], error: 'Ticket not found' }
+  }
 
-    loadTicket()
-  }, [ticketId, customerApi])
+  const messages = await customerApi.getTicketMessages(ticketId)
+  return { ticket, messages, error: null }
+}
+
+interface PageProps {
+  params: { id: string }
+}
+
+export default async function TicketPage({ params }: PageProps) {
+  // Validate the ID parameter
+  if (!params?.id) {
+    notFound()
+  }
+
+  const { ticket, messages, error } = await getTicketData(params.id)
 
   if (error) {
     return (
@@ -49,15 +54,7 @@ export default function TicketPage() {
   }
 
   if (!ticket) {
-    return (
-      <div className="min-h-screen bg-gray-100">
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="px-4 py-6 sm:px-0">
-            <div className="text-center">Loading...</div>
-          </div>
-        </div>
-      </div>
-    )
+    notFound()
   }
 
   return (
@@ -70,14 +67,9 @@ export default function TicketPage() {
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <TicketContent
-            ticket={ticket}
-            messages={messages}
-            onSendMessage={async (content: string, visibility: MessageVisibility) => {
-              await customerApi.replyToTicket(ticketId, content)
-              const updatedMessages = await customerApi.getTicketMessages(ticketId)
-              setMessages(updatedMessages)
-            }}
+          <TicketDetailClient 
+            ticket={ticket} 
+            initialMessages={messages}
           />
         </div>
       </main>

@@ -32,10 +32,10 @@ export class CustomerAPI {
   /**
    * List tickets created by the customer
    */
-  async listMyTickets(filters?: Omit<TicketFilters, 'createdBy'>): Promise<Ticket[]> {
+  async listMyTickets(filters?: Omit<TicketFilters, 'customerEmail'>): Promise<Ticket[]> {
     return listTickets(this.supabase, {
       ...filters,
-      createdBy: this.customerEmail
+      customerEmail: this.customerEmail
     })
   }
 

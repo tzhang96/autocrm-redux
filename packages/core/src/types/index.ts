@@ -18,7 +18,7 @@ export type TicketStatus = 'open' | 'pending' | 'resolved' | 'closed'
 export type TicketPriority = 'low' | 'medium' | 'high'
 
 export interface Ticket {
-  id: string
+  ticket_id: string
   title: string
   description: string
   status: TicketStatus
@@ -68,7 +68,7 @@ export type Metadata = Record<string, unknown>
 
 // Core entity interfaces
 export interface BaseTicket {
-  id: string
+  ticket_id: string
   title: string
   description: string
   status: TicketStatus
@@ -104,6 +104,7 @@ export interface TicketFilters extends PaginationParams {
   priority?: TicketPriority
   assignedTo?: string | null
   createdBy?: string
+  customerEmail?: string
   search?: string
   tags?: string[]
 }
