@@ -1,0 +1,17 @@
+{
+  "name": "@autocrm/portal",
+  "root": "apps/portal",
+  "projectType": "application",
+  "sourceRoot": "apps/portal",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/next:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "root": "apps/portal",
+        "outputPath": "apps/portal/.next"
+      }
+    }
+  }
+} 

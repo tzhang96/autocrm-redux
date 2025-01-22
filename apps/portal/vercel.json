@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd ../.. && pnpm install && pnpm turbo run build --filter=@autocrm/portal...",
+  "installCommand": "cd ../.. && pnpm install",
+  "framework": "nextjs"
+} 

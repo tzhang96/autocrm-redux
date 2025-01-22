@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm turbo run build --filter=@autocrm/portal...",
+  "installCommand": "pnpm install",
+  "framework": "nextjs",
+  "outputDirectory": "apps/portal/.next",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/portal",
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "development": true
+    }
+  }
+} 
