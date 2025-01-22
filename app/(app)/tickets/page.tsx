@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import TicketList from '../components/TicketList'
+import { listTickets } from '@/lib/core/database'
 
 export default async function TicketsPage() {
   const supabase = await createClient()
@@ -10,17 +11,38 @@ export default async function TicketsPage() {
     redirect('/login')
   }
 
-  // Fetch tickets with user information
-  const { data: tickets, error } = await supabase
-    .from('tickets')
-    .select(`
-      *,
-      created_by_user:users!tickets_created_by_fkey(email, name),
-      assigned_to_user:users!tickets_assigned_to_fkey(email, name)
-    `)
-    .order('created_at', { ascending: false })
+  try {
+    const tickets = await listTickets(supabase)
 
-  if (error) {
+    // Debug log
+    console.log('Tickets data:', tickets)
+    if (tickets) {
+      tickets.forEach((ticket, index) => {
+        console.log(`Server Ticket ${index}:`, {
+          id: ticket.id,
+          title: ticket.title,
+          hasId: 'id' in ticket,
+          keys: Object.keys(ticket)
+        })
+      })
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <header className="bg-white shadow">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-2xl font-bold text-gray-900">Tickets</h1>
+          </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="px-4 py-6 sm:px-0">
+            <TicketList tickets={tickets} />
+          </div>
+        </main>
+      </div>
+    )
+  } catch (error) {
     console.error('Error fetching tickets:', error)
     return (
       <div className="p-4">
@@ -30,20 +52,4 @@ export default async function TicketsPage() {
       </div>
     )
   }
-
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-gray-900">Tickets</h1>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <TicketList tickets={tickets} />
-        </div>
-      </main>
-    </div>
-  )
 } 

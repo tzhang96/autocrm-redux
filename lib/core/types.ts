@@ -4,17 +4,20 @@ export type TicketPriority = 'low' | 'medium' | 'high'
 export type MessageVisibility = 'public' | 'internal'
 export type MessageType = 'text' | 'status_change' | 'assignment_change' | 'note' | 'system'
 
+// Keep metadata types flexible early in development
+export type Metadata = Record<string, unknown>
+
 export interface User {
   id: string
   email: string
   name: string | null
   role: UserRole
   created_at: string
-  metadata: Record<string, any>
+  metadata: Metadata
 }
 
-export interface Ticket {
-  ticket_id: string
+export interface BaseTicket {
+  id: string
   title: string
   description: string
   status: TicketStatus
@@ -26,13 +29,20 @@ export interface Ticket {
   created_at: string
   updated_at: string
   last_activity_at: string
-  custom_fields: Record<string, any>
+  custom_fields: Metadata
+}
+
+export interface Ticket extends BaseTicket {
+  // Base ticket without user objects
+}
+
+export interface TicketWithUsers extends BaseTicket {
   created_by_user?: User
   assigned_to_user?: User
 }
 
 export interface Message {
-  message_id: string
+  id: string
   ticket_id: string
   user_id: string
   content: string
@@ -41,7 +51,7 @@ export interface Message {
   is_ai_generated: boolean
   created_at: string
   edited_at?: string
-  metadata: Record<string, any>
+  metadata: Metadata
 }
 
 export interface Attachment {
@@ -55,29 +65,28 @@ export interface Attachment {
 }
 
 // Types for database query filters
-export interface UserFilters {
-  role?: UserRole
-  search?: string
+export interface PaginationParams {
   limit?: number
   offset?: number
 }
 
-export interface TicketFilters {
+export interface UserFilters extends PaginationParams {
+  role?: UserRole
+  search?: string
+}
+
+export interface TicketFilters extends PaginationParams {
   status?: TicketStatus
   priority?: TicketPriority
   assignedTo?: string
   createdBy?: string
   search?: string
   tags?: string[]
-  limit?: number
-  offset?: number
 }
 
-export interface MessageFilters {
+export interface MessageFilters extends PaginationParams {
   visibility?: MessageVisibility
   type?: MessageType
-  limit?: number
-  offset?: number
 }
 
 export interface Customer {
@@ -93,4 +102,11 @@ export interface Comment {
   created_at: string
   created_by: string
   created_by_user?: User
+}
+
+export interface RichTextEditorProps {
+  initialContent?: string
+  onChange?: (content: string) => void
+  readOnly?: boolean
+  placeholder?: string
 } 

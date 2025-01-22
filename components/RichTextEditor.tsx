@@ -3,12 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
-
-interface RichTextEditorProps {
-  content: string
-  onChange: (content: string) => void
-  placeholder?: string
-}
+import { RichTextEditorProps } from '@/lib/core/types'
 
 const MenuBar = ({ editor }: { editor: any }) => {
   if (!editor) {
@@ -146,42 +141,23 @@ const MenuBar = ({ editor }: { editor: any }) => {
   )
 }
 
-export default function RichTextEditor({
-  content,
-  onChange,
-  placeholder = 'Please provide as much detail as possible...',
-}: RichTextEditorProps) {
+export default function RichTextEditor({ initialContent = '', onChange, placeholder }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
-        paragraph: {
-          HTMLAttributes: {
-            class: 'mb-2',
-          },
-        },
-      }),
+      StarterKit,
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-blue-500 hover:text-blue-700 underline',
-        },
       }),
     ],
-    content,
+    content: initialContent,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML()
+      onChange?.(html)
+    },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm focus:outline-none min-h-[150px] overflow-y-auto break-words',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl focus:outline-none',
       },
-    },
-    onUpdate: ({ editor }) => {
-      // Get text content without HTML tags
-      const textContent = editor.getText()
-      if (textContent.length <= 5000) {
-        onChange(editor.getHTML())
-      } else {
-        // If over limit, undo the last change
-        editor.commands.undo()
-      }
     },
   })
 
