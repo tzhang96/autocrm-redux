@@ -4,7 +4,7 @@ import { TicketPriority, TicketStatus, TicketWithUsers } from '@/lib/core/types'
 import TicketContent from '@/components/TicketContent'
 
 interface PageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 function isTicketWithUsers(data: any): data is TicketWithUsers {
@@ -37,8 +37,9 @@ function isTicketWithUsers(data: any): data is TicketWithUsers {
 }
 
 export default async function TicketDetailPage({ params }: PageProps) {
-  // Ensure params.id is available
-  const ticketId = await Promise.resolve(params.id)
+  // Wait for params to be available
+  const resolvedParams = await params
+  const ticketId = resolvedParams.id
   
   const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
