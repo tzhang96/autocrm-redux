@@ -11,8 +11,7 @@
     "lint": "eslint \"**/*.ts*\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
-    "typescript": "5.0.4"
+    "@supabase/supabase-js": "^2.38.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
