@@ -12,6 +12,7 @@
     "@autocrm/api-client": "workspace:*",
     "@autocrm/auth": "workspace:*",
     "@autocrm/core": "workspace:*",
+    "@autocrm/ui": "workspace:*",
     "@supabase/ssr": "^0.0.10",
     "@supabase/supabase-js": "^2.38.0",
     "next": "14.0.4",

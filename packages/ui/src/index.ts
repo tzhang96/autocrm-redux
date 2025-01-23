@@ -1,4 +1,5 @@
 // Re-export components
-export { TicketList } from './components/TicketList'
+export * from './components/TicketList'
+export { DashboardTicketList } from './components/DashboardTicketList'
 export { NewTicketForm } from './components/NewTicketForm'
 export { TicketContent } from './components/TicketContent' 

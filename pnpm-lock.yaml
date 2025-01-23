@@ -48,6 +48,9 @@ importers:
       '@autocrm/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@autocrm/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@supabase/ssr':
         specifier: ^0.0.10
         version: 0.0.10(@supabase/supabase-js@2.48.0)

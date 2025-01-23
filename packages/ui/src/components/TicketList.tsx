@@ -1,12 +1,12 @@
 'use client'
 
 import { Ticket, TicketPriority, TicketStatus } from '@autocrm/core'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
+import { useState } from 'react'
 
-export interface TicketListProps {
+interface TicketListProps {
   tickets: Ticket[]
   onTicketClick?: (ticketId: string) => void
-  showHeader?: boolean
 }
 
 const statusColors: Record<TicketStatus, { bg: string; text: string }> = {
@@ -22,79 +22,127 @@ const priorityColors: Record<TicketPriority, { bg: string; text: string }> = {
   high: { bg: 'bg-red-100', text: 'text-red-800' }
 }
 
-export function TicketList({ tickets, onTicketClick, showHeader = true }: TicketListProps) {
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
+function getTimeAgo(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+  let interval = seconds / 31536000 // years
+  if (interval > 1) return Math.floor(interval) + 'y ago'
+  
+  interval = seconds / 2592000 // months
+  if (interval > 1) return Math.floor(interval) + 'mo ago'
+  
+  interval = seconds / 86400 // days
+  if (interval > 1) return Math.floor(interval) + 'd ago'
+  
+  interval = seconds / 3600 // hours
+  if (interval > 1) return Math.floor(interval) + 'h ago'
+  
+  interval = seconds / 60 // minutes
+  if (interval > 1) return Math.floor(interval) + 'm ago'
+  
+  return Math.floor(seconds) + 's ago'
+}
+
+export function TicketList({ tickets, onTicketClick }: TicketListProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const [loadingTicketId, setLoadingTicketId] = useState<string | null>(null)
 
-  // Debug the tickets prop
-  console.log('TicketList received tickets:', tickets.map(t => ({ id: t.ticket_id, title: t.title })))
-
-  const handleTicketClick = (ticket: Ticket) => {
-    console.log('TicketList: Handling click for ticket:', ticket.ticket_id, 'Full ticket:', ticket)
-    if (!ticket.ticket_id) {
-      console.error('Invalid ticket ID')
-      return
-    }
+  const handleTicketClick = async (ticket: Ticket) => {
+    if (loadingTicketId || !ticket.ticket_id) return
     
-    if (onTicketClick) {
-      onTicketClick(ticket.ticket_id)
-    } else {
-      router.push(`/tickets/${ticket.ticket_id}`)
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent, ticket: Ticket) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleTicketClick(ticket)
+    setLoadingTicketId(ticket.ticket_id)
+    
+    try {
+      if (onTicketClick) {
+        await onTicketClick(ticket.ticket_id)
+      } else {
+        const path = `/tickets/${ticket.ticket_id}`
+        await router.push(path)
+      }
+    } catch (error) {
+      console.error('Navigation error:', error)
+    } finally {
+      setLoadingTicketId(null)
     }
   }
 
   return (
-    <div className="overflow-hidden bg-white shadow sm:rounded-md">
-      {showHeader && (
-        <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">My Tickets</h3>
-        </div>
-      )}
-      <ul role="list" className="divide-y divide-gray-200">
-        {tickets.length === 0 && (
-          <li className="px-4 py-4 sm:px-6 text-gray-500 text-center">
-            No tickets found
-          </li>
-        )}
-        {tickets.map((ticket) => (
-          <li 
-            key={`ticket-${ticket.ticket_id}`} 
-            className="cursor-pointer hover:bg-gray-50 px-4 py-4 sm:px-6"
+    <div className="divide-y divide-gray-200">
+      {tickets.map((ticket) => {
+        const isLoading = loadingTicketId === ticket.ticket_id
+        
+        return (
+          <div
+            key={ticket.ticket_id}
             onClick={() => handleTicketClick(ticket)}
-            onKeyDown={(e) => handleKeyDown(e, ticket)}
+            className={`flex items-center justify-between py-3 hover:bg-gray-50 cursor-pointer transition-colors duration-150 ${isLoading ? 'bg-gray-50' : ''}`}
             role="button"
             tabIndex={0}
-            aria-label={`View ticket: ${ticket.title}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                handleTicketClick(ticket)
+              }
+            }}
+            aria-disabled={isLoading}
           >
-            <div className="flex items-center justify-between">
-              <div className="truncate text-sm font-medium text-indigo-600">
-                {ticket.title}
-              </div>
-              <div className="flex flex-shrink-0 space-x-2">
-                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${statusColors[ticket.status].bg} ${statusColors[ticket.status].text}`}>
-                  {ticket.status.replace('_', ' ')}
-                </span>
-                <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${priorityColors[ticket.priority].bg} ${priorityColors[ticket.priority].text}`}>
-                  {ticket.priority}
-                </span>
-              </div>
-            </div>
-            <div className="mt-2 flex justify-between">
-              <div className="sm:flex">
-                <div className="flex items-center text-sm text-gray-500">
-                  Created {new Date(ticket.created_at).toLocaleDateString()}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-3">
+                <p className={`text-sm font-medium truncate ${isLoading ? 'text-gray-500' : 'text-gray-900'}`}>
+                  {ticket.title}
+                </p>
+                <div className="flex space-x-2">
+                  <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${statusColors[ticket.status].bg} ${statusColors[ticket.status].text} ${isLoading ? 'opacity-75' : ''}`}>
+                    {ticket.status}
+                  </span>
+                  <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${priorityColors[ticket.priority].bg} ${priorityColors[ticket.priority].text} ${isLoading ? 'opacity-75' : ''}`}>
+                    {ticket.priority}
+                  </span>
                 </div>
               </div>
+              <div className="mt-1">
+                <p className={`text-sm ${isLoading ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {ticket.customer_email}
+                </p>
+              </div>
             </div>
-          </li>
-        ))}
-      </ul>
+            <div className="flex flex-col items-end space-y-1 ticket-timestamps">
+              <div 
+                className={`!text-xs ${isLoading ? '!text-gray-300' : '!text-gray-400'} [&]:text-xs [&]:text-gray-400 timestamp`}
+                style={{ fontSize: '12px', color: isLoading ? 'rgb(209 213 219)' : 'rgb(156 163 175)' }}
+                title={formatDateTime(ticket.created_at)}
+              >
+                Created {getTimeAgo(ticket.created_at)}
+              </div>
+              <div 
+                className={`!text-xs ${isLoading ? '!text-gray-300' : '!text-gray-400'} [&]:text-xs [&]:text-gray-400 timestamp`}
+                style={{ fontSize: '12px', color: isLoading ? 'rgb(209 213 219)' : 'rgb(156 163 175)' }}
+                title={formatDateTime(ticket.last_activity_at)}
+              >
+                Updated {getTimeAgo(ticket.last_activity_at)}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+      {tickets.length === 0 && (
+        <div className="py-4 text-center text-sm text-gray-500">
+          No tickets found
+        </div>
+      )}
     </div>
   )
 } 

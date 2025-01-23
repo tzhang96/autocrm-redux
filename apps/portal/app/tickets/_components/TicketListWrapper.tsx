@@ -26,7 +26,6 @@ export function TicketListWrapper({ tickets }: TicketListWrapperProps) {
   return (
     <TicketList 
       tickets={tickets} 
-      showHeader={false}
       onTicketClick={handleTicketClick}
     />
   )
