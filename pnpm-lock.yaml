@@ -245,6 +245,9 @@ importers:
       react:
         specifier: ^18.2.0
         version: 18.3.1
+      tsup:
+        specifier: ^8.0.1
+        version: 8.3.5(jiti@1.21.7)(postcss@8.5.1)(typescript@5.0.4)(yaml@2.7.0)
     devDependencies:
       eslint:
         specifier: ^8.0.0
@@ -252,9 +255,6 @@ importers:
       rimraf:
         specifier: ^5.0.5
         version: 5.0.10
-      tsup:
-        specifier: ^8.0.1
-        version: 8.3.5(jiti@1.21.7)(postcss@8.5.1)(typescript@5.0.4)(yaml@2.7.0)
       typescript:
         specifier: 5.0.4
         version: 5.0.4
