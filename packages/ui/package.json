@@ -6,7 +6,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "pnpm add -g tsup && tsc --emitDeclarationOnly && tsup",
+    "build": "tsc --emitDeclarationOnly && tsup",
     "dev": "tsup --watch",
     "clean": "rimraf dist"
   },
@@ -17,12 +17,12 @@
     "next": "14.0.4",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.1"
   },
   "devDependencies": {
     "eslint": "^8.0.0",
     "rimraf": "^5.0.5",
-    "tsup": "^8.0.1",
     "typescript": "5.0.4"
   },
   "peerDependencies": {
