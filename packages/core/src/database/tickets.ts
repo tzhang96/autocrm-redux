@@ -19,13 +19,13 @@ export async function createTicket(
 ): Promise<Ticket> {
   try {
     // Check active ticket count for customers
-    const { count } = await supabase
+    const { count, error: countError } = await supabase
       .from('tickets')
       .select('*', { count: 'exact', head: true })
       .eq('customer_email', data.customerEmail)
       .in('status', ['open', 'pending'])
-      .single()
 
+    if (countError) throw new DatabaseError('Failed to check ticket count', 'createTicket', countError)
     if (count && count >= MAX_ACTIVE_TICKETS) {
       throw new DatabaseError(
         `Maximum number of active tickets (${MAX_ACTIVE_TICKETS}) reached`,

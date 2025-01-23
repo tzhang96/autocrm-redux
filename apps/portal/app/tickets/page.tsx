@@ -4,8 +4,16 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { TicketListWrapper } from './_components/TicketListWrapper'
 import { Navigation } from '@/components/Navigation'
+import { revalidatePath } from 'next/cache'
+
+// Disable caching for this page to ensure fresh data
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function TicketsPage() {
+  // Ensure we revalidate this path when accessed
+  revalidatePath('/tickets')
+
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   
