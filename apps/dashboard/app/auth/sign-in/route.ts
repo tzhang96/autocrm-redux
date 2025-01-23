@@ -1,5 +1,4 @@
-import { createServerClient } from '@autocrm/auth'
-import { cookies } from 'next/headers'
+import { createServerSupabaseClient } from '@/utils/supabase-server'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
@@ -7,9 +6,7 @@ export async function POST(request: Request) {
   const email = String(formData.get('email'))
   const password = String(formData.get('password'))
 
-  const cookieStore = cookies()
-  const supabase = await createServerClient(cookieStore)
-
+  const supabase = await createServerSupabaseClient()
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,

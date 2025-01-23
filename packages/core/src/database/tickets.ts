@@ -59,26 +59,17 @@ export async function createTicket(
 export async function getTicket(
   supabase: SupabaseClient,
   ticketId: string
-): Promise<TicketWithUsers | null> {
+): Promise<Ticket | null> {
   try {
-    console.log('Getting ticket with ID:', ticketId) // Debug log
-    const query = supabase
+    const { data, error } = await supabase
       .from('tickets')
       .select('*')
       .eq('ticket_id', ticketId)
       .single()
 
-    console.log('Query:', query) // Debug the query
-    const { data, error } = await query
-
-    console.log('Ticket query result:', { data, error }) // Debug log with better formatting
-    if (error) {
-      console.error('Database error:', error) // Debug the error
-      throw new DatabaseError('Failed to get ticket', 'getTicket', error)
-    }
+    if (error) throw new DatabaseError('Failed to get ticket', 'getTicket', error)
     return data
   } catch (error) {
-    console.error('Caught error:', error) // Debug any caught errors
     throw wrapDbError('getTicket', error)
   }
 }

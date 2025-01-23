@@ -24,10 +24,23 @@ import {
  * - Send public messages on their tickets
  */
 export class CustomerAPI {
+  private userId: string | null = null
+
   constructor(
     private supabase: SupabaseClient,
     private customerEmail: string
   ) {}
+
+  private async ensureUserId(): Promise<string> {
+    if (!this.userId) {
+      const { data: { user } } = await this.supabase.auth.getUser()
+      if (!user) {
+        throw new Error('No authenticated user')
+      }
+      this.userId = user.id
+    }
+    return this.userId
+  }
 
   /**
    * List tickets created by the customer
@@ -58,10 +71,11 @@ export class CustomerAPI {
     description: string
     priority: TicketPriority
   }): Promise<Ticket> {
+    const userId = await this.ensureUserId()
     return createTicket(this.supabase, {
       ...data,
       customerEmail: this.customerEmail,
-      createdBy: this.customerEmail
+      createdBy: userId
     })
   }
 
@@ -75,9 +89,10 @@ export class CustomerAPI {
       return null
     }
 
+    const userId = await this.ensureUserId()
     return createMessage(this.supabase, {
       ticketId,
-      userId: this.customerEmail,
+      userId,
       content,
       visibility: 'public',
       messageType: 'text',

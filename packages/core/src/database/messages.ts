@@ -14,6 +14,37 @@ export async function createMessage(
   data: CreateMessageData
 ): Promise<Message> {
   try {
+    // First verify the ticket exists
+    const { data: ticket, error: ticketError } = await supabase
+      .from('tickets')
+      .select('ticket_id')
+      .eq('ticket_id', data.ticketId)
+      .single()
+
+    if (ticketError || !ticket) {
+      throw new DatabaseError(
+        'Ticket not found',
+        'createMessage',
+        ticketError || new Error('No ticket found')
+      )
+    }
+
+    // Then verify the user exists
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('user_id')
+      .eq('user_id', data.userId)
+      .single()
+
+    if (userError || !user) {
+      throw new DatabaseError(
+        'User not found',
+        'createMessage',
+        userError || new Error('No user found')
+      )
+    }
+
+    // Now create the message
     const { data: message, error } = await supabase
       .from('messages')
       .insert({
@@ -28,8 +59,19 @@ export async function createMessage(
       .select(MESSAGE_FIELDS.select)
       .single()
 
-    if (error) throw new DatabaseError('Failed to create message', 'createMessage', error)
-    if (!message) throw new DatabaseError('Failed to create message', 'createMessage')
+    if (error) {
+      throw new DatabaseError(
+        'Failed to insert message',
+        'createMessage',
+        error
+      )
+    }
+    if (!message) {
+      throw new DatabaseError(
+        'No message returned after insert',
+        'createMessage'
+      )
+    }
     return message
   } catch (error) {
     throw wrapDbError('createMessage', error)

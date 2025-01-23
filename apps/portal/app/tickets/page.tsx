@@ -3,33 +3,22 @@ import { createServerSupabaseClient } from '@/utils/supabase-server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { TicketListWrapper } from './_components/TicketListWrapper'
+import { Navigation } from '@/components/Navigation'
 
-async function getCustomerTickets() {
+export default async function TicketsPage() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user || !user.email) {
+  if (!user?.email) {
     redirect('/login')
   }
 
-  console.log('Fetching tickets for user:', user.email) // Debug user
-
-  try {
-    const customerApi = new CustomerAPI(supabase, user.email)
-    const tickets = await customerApi.listMyTickets()
-    console.log('Retrieved tickets:', tickets.map(t => ({ id: t.id, title: t.title }))) // Debug tickets
-    return tickets
-  } catch (error) {
-    console.error('Error fetching tickets:', error)
-    return []
-  }
-}
-
-export default async function TicketsPage() {
-  const tickets = await getCustomerTickets()
+  const customerApi = new CustomerAPI(supabase, user.email)
+  const tickets = await customerApi.listMyTickets()
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Navigation />
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">

@@ -48,6 +48,7 @@ export interface Message {
   created_at: string
   edited_at?: string
   metadata: Record<string, unknown>
+  user?: User
 }
 
 // Attachment types
