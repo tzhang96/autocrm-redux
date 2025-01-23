@@ -108,6 +108,8 @@ export interface TicketFilters extends PaginationParams {
   customerEmail?: string
   search?: string
   tags?: string[]
+  sortBy?: 'created_at' | 'updated_at' | 'last_activity_at' | 'priority' | 'status'
+  sortOrder?: 'asc' | 'desc'
 }
 
 export interface MessageFilters extends PaginationParams {

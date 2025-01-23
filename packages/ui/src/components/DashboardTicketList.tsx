@@ -69,8 +69,6 @@ export function DashboardTicketList({
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set())
 
   const handleTicketClick = (ticket: Ticket) => {
-    console.log('DashboardTicketList: Click handler triggered')
-    
     if (!ticket.ticket_id) {
       console.error('Invalid ticket ID')
       return
@@ -84,7 +82,7 @@ export function DashboardTicketList({
   }
 
   const handleCheckboxClick = (e: React.MouseEvent, ticketId: string) => {
-    e.stopPropagation() // Prevent triggering row click
+    e.stopPropagation()
     const newSelected = new Set(selectedTickets)
     if (newSelected.has(ticketId)) {
       newSelected.delete(ticketId)
@@ -108,33 +106,33 @@ export function DashboardTicketList({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
-            <th scope="col" className="relative w-12 px-6 sm:w-16 sm:px-8">
+            <th scope="col" className="w-12 px-3 py-3.5">
               <input
                 type="checkbox"
-                className="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                 checked={selectedTickets.size === tickets.length}
                 onChange={handleSelectAll}
               />
             </th>
-            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[30%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Title & ID
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[20%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Customer
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[10%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Status
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[10%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Priority
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[10%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Assigned To
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[10%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Created
             </th>
-            <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="w-[10%] px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
               Last Activity
             </th>
           </tr>
@@ -146,42 +144,44 @@ export function DashboardTicketList({
               onClick={() => handleTicketClick(ticket)}
               className="hover:bg-gray-50 cursor-pointer"
             >
-              <td className="relative w-12 px-6 sm:w-16 sm:px-8">
+              <td className="w-12 px-3 py-4">
                 <input
                   type="checkbox"
-                  className="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   checked={selectedTickets.has(ticket.ticket_id!)}
                   onChange={(e) => e.stopPropagation()}
                   onClick={(e) => handleCheckboxClick(e, ticket.ticket_id!)}
                 />
               </td>
-              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm">
-                <div className="font-medium text-gray-900">{ticket.title}</div>
-                <div className="text-gray-500">#{ticket.ticket_id}</div>
+              <td className="w-[30%] px-3 py-4">
+                <div className="font-medium text-gray-900 truncate">{ticket.title}</div>
+                <div className="text-gray-500 text-sm truncate">#{ticket.ticket_id}</div>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {ticket.customer_email}
+              <td className="w-[20%] px-3 py-4">
+                <div className="text-gray-500 text-sm truncate">{ticket.customer_email}</div>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm">
+              <td className="w-[10%] px-3 py-4">
                 <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${statusColors[ticket.status].bg} ${statusColors[ticket.status].text}`}>
                   {ticket.status}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm">
+              <td className="w-[10%] px-3 py-4">
                 <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${priorityColors[ticket.priority].bg} ${priorityColors[ticket.priority].text}`}>
                   {ticket.priority}
                 </span>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                {ticket.assigned_to || 'Unassigned'}
+              <td className="w-[10%] px-3 py-4">
+                <div className="text-gray-500 text-sm truncate">
+                  {ticket.assigned_to || 'Unassigned'}
+                </div>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                <div title={formatDateTime(ticket.created_at)}>
+              <td className="w-[10%] px-3 py-4">
+                <div className="text-gray-500 text-sm truncate" title={formatDateTime(ticket.created_at)}>
                   {getTimeAgo(ticket.created_at)}
                 </div>
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                <div title={formatDateTime(ticket.last_activity_at)}>
+              <td className="w-[10%] px-3 py-4">
+                <div className="text-gray-500 text-sm truncate" title={formatDateTime(ticket.last_activity_at)}>
                   {getTimeAgo(ticket.last_activity_at)}
                 </div>
               </td>
@@ -189,7 +189,7 @@ export function DashboardTicketList({
           ))}
           {tickets.length === 0 && (
             <tr>
-              <td colSpan={8} className="py-4 text-center text-sm text-gray-500">
+              <td colSpan={8} className="px-3 py-4 text-center text-sm text-gray-500">
                 No tickets found
               </td>
             </tr>

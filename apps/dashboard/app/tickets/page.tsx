@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useTransition } from 'react'
 import { DashboardTicketList } from '@autocrm/ui'
 import { Ticket, TicketStatus, TicketPriority } from '@autocrm/core'
 import { useRouter } from 'next/navigation'
-import { fetchTickets } from '../actions'
+import { fetchTickets } from './actions'
 
 const statusOptions: TicketStatus[] = ['open', 'pending', 'resolved', 'closed']
 const priorityOptions: TicketPriority[] = ['low', 'medium', 'high']

@@ -105,6 +105,9 @@ export async function POST(request: Request) {
   })
 
   console.log('Successful staff login:', { email, role: userRecord.role })
+  if (userRecord.role === 'agent' || userRecord.role === 'admin') {
+    return NextResponse.redirect(new URL('/tickets/list', request.url))
+  }
   return NextResponse.redirect(new URL('/tickets/list', request.url), {
     status: 303,
   })
