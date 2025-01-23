@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
-    "@supabase/postgrest-js": "^1.0.0"
+    "@supabase/postgrest-js": "^1.0.0",
+    "@types/node": "^20.0.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "typescript": "^5.0.4",
     "eslint": "^8.0.0",
     "tsconfig": "*"

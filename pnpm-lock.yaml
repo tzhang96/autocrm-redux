@@ -208,10 +208,10 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.38.0
         version: 2.48.0
-    devDependencies:
       '@types/node':
         specifier: ^20.0.0
         version: 20.17.14
+    devDependencies:
       eslint:
         specifier: ^8.0.0
         version: 8.57.1
