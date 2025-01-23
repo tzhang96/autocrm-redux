@@ -16,7 +16,9 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+          })
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -40,24 +42,60 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
   ) {
     const redirectUrl = request.nextUrl.clone()
     redirectUrl.pathname = config.redirects.signIn
-    return NextResponse.redirect(redirectUrl)
+    const response = NextResponse.redirect(redirectUrl)
+    
+    // Copy cookies from supabaseResponse to the redirect response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie.name, cookie.value)
+    })
+    
+    return response
   }
 
   // If user is logged in, check role-based access
   if (user) {
-    const role = user.user_metadata?.role as UserRole || UserRole.CUSTOMER
+    // First check user_metadata for role
+    let role = user.user_metadata?.role as UserRole
+
+    // If no role in metadata, fetch from database
+    if (!role) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('role')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (userData) {
+        role = userData.role as UserRole
+        // Update user metadata with role from database
+        await supabase.auth.updateUser({
+          data: { role: role }
+        })
+      } else {
+        role = UserRole.CUSTOMER // Default to customer if no role found
+      }
+    }
+
     const allowedPathsForRole = config.roleBasedPaths?.[role] || []
 
     // If user has no allowed paths for their role, or the current path isn't in their allowed paths
     if (
-      allowedPathsForRole.length === 0 ||
-      !allowedPathsForRole.some(allowedPath => request.nextUrl.pathname.startsWith(allowedPath))
+      !request.nextUrl.pathname.startsWith(config.redirects.signIn) &&
+      !request.nextUrl.pathname.startsWith('/auth') &&
+      !request.nextUrl.pathname.startsWith(config.redirects.unauthorized) &&
+      (allowedPathsForRole.length === 0 ||
+        !allowedPathsForRole.some(allowedPath => request.nextUrl.pathname.startsWith(allowedPath)))
     ) {
-      // If they're logged in but unauthorized, sign them out and redirect to login
-      await supabase.auth.signOut()
       const redirectUrl = request.nextUrl.clone()
-      redirectUrl.pathname = config.redirects.signIn
-      return NextResponse.redirect(redirectUrl)
+      redirectUrl.pathname = config.redirects.unauthorized
+      const response = NextResponse.redirect(redirectUrl)
+      
+      // Copy cookies from supabaseResponse to the redirect response
+      supabaseResponse.cookies.getAll().forEach((cookie) => {
+        response.cookies.set(cookie.name, cookie.value)
+      })
+      
+      return response
     }
   }
 

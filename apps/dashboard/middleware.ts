@@ -14,8 +14,23 @@ export async function middleware(request: NextRequest) {
       '/unauthorized'
     ],
     roleBasedPaths: {
-      'agent': ['/tickets/list', '/tickets/', '/profile', '/dashboard'],
-      'admin': ['/tickets/list', '/tickets/', '/profile', '/dashboard', '/settings']
+      'agent': [
+        '/',
+        '/tickets',
+        '/tickets/list',
+        '/tickets/[id]',
+        '/profile',
+        '/dashboard'
+      ],
+      'admin': [
+        '/',
+        '/tickets',
+        '/tickets/list',
+        '/tickets/[id]',
+        '/profile',
+        '/dashboard',
+        '/settings'
+      ]
     }
   })
 }
