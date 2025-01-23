@@ -112,6 +112,12 @@ importers:
       '@supabase/supabase-js':
         specifier: latest
         version: 2.48.0
+      '@tailwindcss/forms':
+        specifier: ^0.5.7
+        version: 0.5.10(tailwindcss@3.4.17)
+      '@tailwindcss/typography':
+        specifier: ^0.5.10
+        version: 0.5.16(tailwindcss@3.4.17)
       '@tiptap/extension-link':
         specifier: ^2.1.13
         version: 2.11.3(@tiptap/core@2.11.3(@tiptap/pm@2.11.3))(@tiptap/pm@2.11.3)
@@ -121,25 +127,6 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.1.13
         version: 2.11.3
-      html-react-parser:
-        specifier: ^5.1.1
-        version: 5.2.2(@types/react@18.3.18)(react@18.3.1)
-      next:
-        specifier: 14.0.4
-        version: 14.0.4(@babel/core@7.26.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: ^18
-        version: 18.3.1
-      react-dom:
-        specifier: ^18
-        version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@tailwindcss/forms':
-        specifier: ^0.5.7
-        version: 0.5.10(tailwindcss@3.4.17)
-      '@tailwindcss/typography':
-        specifier: ^0.5.10
-        version: 0.5.16(tailwindcss@3.4.17)
       '@types/node':
         specifier: ^20
         version: 20.17.14
@@ -152,21 +139,34 @@ importers:
       autoprefixer:
         specifier: ^10.0.1
         version: 10.4.20(postcss@8.5.1)
-      eslint:
-        specifier: ^8
-        version: 8.57.1
-      eslint-config-next:
+      html-react-parser:
+        specifier: ^5.1.1
+        version: 5.2.2(@types/react@18.3.18)(react@18.3.1)
+      next:
         specifier: 14.0.4
-        version: 14.0.4(eslint@8.57.1)(typescript@5.7.3)
+        version: 14.0.4(@babel/core@7.26.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       postcss:
         specifier: ^8
         version: 8.5.1
+      react:
+        specifier: ^18
+        version: 18.3.1
+      react-dom:
+        specifier: ^18
+        version: 18.3.1(react@18.3.1)
       tailwindcss:
         specifier: ^3.3.0
         version: 3.4.17
       typescript:
         specifier: ^5
         version: 5.7.3
+    devDependencies:
+      eslint:
+        specifier: ^8
+        version: 8.57.1
+      eslint-config-next:
+        specifier: 14.0.4
+        version: 14.0.4(eslint@8.57.1)(typescript@5.7.3)
 
   packages/api-client:
     dependencies:
