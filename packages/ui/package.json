@@ -6,7 +6,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc --emitDeclarationOnly && tsup",
+    "build": "pnpm add -g tsup && tsc --emitDeclarationOnly && tsup",
     "dev": "tsup --watch",
     "clean": "rimraf dist"
   },
