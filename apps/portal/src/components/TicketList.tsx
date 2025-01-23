@@ -27,7 +27,7 @@ export default function TicketList({ tickets = [], showHeader = true }: TicketLi
   const ticketList = tickets || []
 
   const handleTicketClick = (ticket: Ticket) => {
-    router.push(`/tickets/${ticket.id}`)
+    router.push(`/tickets/${ticket.ticket_id}`)
   }
 
   return (
@@ -51,14 +51,14 @@ export default function TicketList({ tickets = [], showHeader = true }: TicketLi
         )}
         {ticketList.map((ticket) => (
           <li
-            key={`ticket-${ticket.id}`}
+            key={`ticket-${ticket.ticket_id}`}
             className="hover:bg-gray-50 cursor-pointer"
             onClick={() => handleTicketClick(ticket)}
           >
             <div className="px-4 py-4 sm:px-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-500">#{ticket.id}</span>
+                  <span className="text-sm text-gray-500">#{ticket.ticket_id}</span>
                   <p className="ml-2 text-sm font-medium text-blue-600 truncate">
                     {ticket.title}
                   </p>

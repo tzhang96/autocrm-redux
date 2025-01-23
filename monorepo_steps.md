@@ -102,36 +102,36 @@ autocrm/
 ### 5. Customer Portal MVP (Day 4)
 - [x] Set up apps/portal
   - [x] Basic Next.js setup
-  - [ ] Authentication integration
-    - [ ] Import and configure auth package
-    - [ ] Set up login/signup pages
-    - [ ] Implement customer-specific routes
-    - [ ] Add auth middleware
-  - [ ] Core ticket features
-    - [ ] View my tickets list
-    - [ ] Create new ticket
-    - [ ] View single ticket
-    - [ ] Add reply to ticket
+  - [x] Authentication integration
+    - [x] Import and configure auth package
+    - [x] Set up login/signup pages
+    - [x] Implement customer-specific routes
+    - [x] Add auth middleware
+  - [x] Core ticket features
+    - [x] View my tickets list
+    - [x] Create new ticket
+    - [x] View single ticket
+    - [x] Add reply to ticket
 
 ### 6. Staff Dashboard MVP (Day 4-5)
 - [x] Set up apps/dashboard
   - [x] Basic Next.js setup
-  - [ ] Authentication with role check
-    - [ ] Import and configure auth package
-    - [ ] Set up staff login page
-    - [ ] Implement staff-only routes
-    - [ ] Add role-based middleware
+  - [x] Authentication with role check
+    - [x] Import and configure auth package
+    - [x] Set up staff login page
+    - [x] Implement staff-only routes
+    - [x] Add role-based middleware
   - [ ] Core ticket management
     - [ ] View all tickets list
     - [ ] Basic ticket filtering
     - [ ] Handle single ticket
     - [ ] Reply to tickets
 
-### 7. Testing Essential Flows (Throughout)
+### 7. Testing Essential Flows (Post-MVP)
 - [ ] Core package tests
-  - [ ] Database operation tests
-  - [ ] API client tests
-  - [ ] Auth flow tests
+  - [ ] Database operation tests (deferred)
+  - [ ] API client tests (deferred)
+  - [ ] Auth flow tests (deferred)
 - [ ] Basic integration tests
   - [ ] Customer ticket creation flow
   - [ ] Staff ticket handling flow
@@ -139,15 +139,21 @@ autocrm/
   - [ ] Role-based access tests
 
 ### 8. MVP Deployment Setup (Day 5)
-- [ ] Configure deployment
-  - [ ] Environment variables
-    - [ ] Supabase configuration
-    - [ ] Auth configuration
-    - [ ] API endpoints
-  - [ ] Build scripts
+- [x] Configure deployment
+  - [x] Environment variables
+    - [x] Supabase configuration
+    - [x] Auth configuration
+    - [x] API endpoints
+  - [x] Build scripts
+    - [x] Update core package dependencies
+    - [x] Configure Turborepo build pipeline
+    - [x] Add TypeScript configurations
   - [ ] Basic CI setup
 - [ ] Deploy MVP
   - [ ] Deploy portal
+    - [x] Configure Vercel project
+    - [ ] Set environment variables
+    - [ ] Deploy and verify build
   - [ ] Deploy dashboard
   - [ ] Verify core workflows
   - [ ] Test auth flows in production

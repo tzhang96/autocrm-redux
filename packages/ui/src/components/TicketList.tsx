@@ -64,7 +64,7 @@ export function TicketList({ tickets, onTicketClick, showHeader = true }: Ticket
         )}
         {tickets.map((ticket) => (
           <li 
-            key={ticket.ticket_id} 
+            key={`ticket-${ticket.ticket_id}`} 
             className="cursor-pointer hover:bg-gray-50 px-4 py-4 sm:px-6"
             onClick={() => handleTicketClick(ticket)}
             onKeyDown={(e) => handleKeyDown(e, ticket)}

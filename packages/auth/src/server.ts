@@ -1,32 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
-import { type cookies } from 'next/headers'
+import { cookies } from 'next/headers'
 import { Database } from '@autocrm/core'
 
-export const createClient = async (cookieStore: ReturnType<typeof cookies>) => {
-  const cookies = await cookieStore
+export const createClient = async () => {
+  const cookieStore = await cookies()
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookies.get(name)?.value
+        getAll() {
+          return cookieStore.getAll()
         },
-        set(name: string, value: string, options: any) {
-          try {
-            cookies.set({ name, value, ...options })
-          } catch (error) {
-            // Handle cookies in edge functions
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookies.delete({ name, ...options })
-          } catch (error) {
-            // Handle cookies in edge functions
-          }
-        },
-      },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        }
+      }
     }
   )
 } 

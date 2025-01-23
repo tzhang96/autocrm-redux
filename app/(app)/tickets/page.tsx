@@ -19,7 +19,7 @@ export default async function TicketsPage() {
     if (tickets) {
       tickets.forEach((ticket, index) => {
         console.log(`Server Ticket ${index}:`, {
-          id: ticket.id,
+          id: ticket.ticket_id,
           title: ticket.title,
           hasId: 'id' in ticket,
           keys: Object.keys(ticket)

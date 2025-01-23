@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation'
 
 export function LoginForm() {
   const searchParams = useSearchParams()
-  const error = searchParams.get('error')
+  const error = searchParams?.get('error')
 
   return (
     <>

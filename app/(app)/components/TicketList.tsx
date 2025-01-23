@@ -31,7 +31,7 @@ export default function TicketList({ tickets = [], showHeader = true }: TicketLi
   console.log('TicketList received:', ticketList)
   ticketList.forEach((ticket, index) => {
     console.log(`Ticket ${index}:`, {
-      id: ticket.id,
+      id: ticket.ticket_id,
       ticket_id: (ticket as any).ticket_id,
       title: ticket.title,
       hasId: 'id' in ticket,
@@ -41,7 +41,7 @@ export default function TicketList({ tickets = [], showHeader = true }: TicketLi
 
   const handleTicketClick = (ticket: Ticket) => {
     console.log('Navigating to ticket:', ticket)
-    const ticketId = ticket.id || (ticket as any).ticket_id
+    const ticketId = ticket.ticket_id
     if (!ticketId) {
       console.error('Ticket ID is undefined')
       return
@@ -70,7 +70,7 @@ export default function TicketList({ tickets = [], showHeader = true }: TicketLi
         )}
         {ticketList.map((ticket, index) => {
           // Generate a fallback key if id is undefined
-          const ticketId = ticket.id || (ticket as any).ticket_id
+          const ticketId = ticket.ticket_id
           const key = ticketId ? `ticket-${ticketId}` : `ticket-index-${index}`
           return (
             <li

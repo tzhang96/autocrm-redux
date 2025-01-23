@@ -5,12 +5,12 @@ import { CustomerAPI } from '@autocrm/api-client'
 import { Message } from '@autocrm/core'
 
 interface TicketMessagesProps {
-  ticketId: string
+  ticket_id: string
   messages: Message[]
   customerApi: CustomerAPI
 }
 
-export default function TicketMessages({ ticketId, messages, customerApi }: TicketMessagesProps) {
+export default function TicketMessages({ ticket_id, messages, customerApi }: TicketMessagesProps) {
   const [newMessage, setNewMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -23,7 +23,7 @@ export default function TicketMessages({ ticketId, messages, customerApi }: Tick
     setIsSubmitting(true)
 
     try {
-      await customerApi.replyToTicket(ticketId, newMessage)
+      await customerApi.replyToTicket(ticket_id, newMessage)
       setNewMessage('')
       window.location.reload() // Refresh to show new message
     } catch (err) {

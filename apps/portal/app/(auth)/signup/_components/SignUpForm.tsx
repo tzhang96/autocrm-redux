@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 
 export function SignUpForm() {
   const searchParams = useSearchParams()
-  const error = searchParams.get('error')
+  const error = searchParams?.get('error')
 
   return (
     <>

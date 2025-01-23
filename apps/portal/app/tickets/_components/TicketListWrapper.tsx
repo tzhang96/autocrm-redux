@@ -12,10 +12,10 @@ export function TicketListWrapper({ tickets }: TicketListWrapperProps) {
   const router = useRouter()
 
   // Debug the tickets prop
-  console.log('TicketListWrapper received tickets:', tickets.map(t => ({ id: t.id, title: t.title })))
+  console.log('TicketListWrapper received tickets:', tickets.map(t => ({ id: t.ticket_id, title: t.title })))
 
   const handleTicketClick = (ticketId: string) => {
-    console.log('TicketListWrapper: Navigating to ticket:', ticketId, 'Full ticket:', tickets.find(t => t.id === ticketId))
+    console.log('TicketListWrapper: Navigating to ticket:', ticketId, 'Full ticket:', tickets.find(t => t.ticket_id === ticketId))
     if (!ticketId) {
       console.error('Invalid ticket ID in wrapper')
       return
