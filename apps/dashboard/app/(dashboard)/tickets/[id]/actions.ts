@@ -176,7 +176,10 @@ export const assignTicket: TicketActions['assignTicket'] = async (
 
     // Check permissions
     if (currentUser.role !== 'admin') {
-      // Agents can only assign themselves
+      // Agents can only assign themselves and cannot unassign
+      if (agent_id === null) {
+        throw new Error('Only administrators can unassign tickets')
+      }
       if (agent_id !== user.id) {
         throw new Error('Agents can only assign tickets to themselves')
       }
@@ -195,15 +198,25 @@ export const assignTicket: TicketActions['assignTicket'] = async (
       throw updateError
     }
 
+    // Get agent name if assigning
+    let assignmentMessage = 'Ticket unassigned'
+    if (agent_id) {
+      const { data: agent } = await supabase
+        .from('users')
+        .select('name, email')
+        .eq('user_id', agent_id)
+        .single()
+
+      assignmentMessage = `Ticket assigned to ${agent?.name || agent?.email || 'unknown agent'}`
+    }
+
     // Add a system message about the assignment change
     const { error: messageError } = await supabase
       .from('messages')
       .insert({
         ticket_id,
         user_id: user.id,
-        content: agent_id 
-          ? `Ticket assigned to ${agent_id === user.id ? 'self' : 'another agent'}`
-          : 'Ticket unassigned',
+        content: assignmentMessage,
         message_type: 'assignment_change',
         visibility: 'public'
       })
@@ -219,26 +232,39 @@ export const assignTicket: TicketActions['assignTicket'] = async (
 
 export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () => {
   try {
+    console.log('=== Starting getAvailableAgents ===')
     const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
-      redirect('/auth/sign-in')
+      console.log('No authenticated user found')
+      throw new Error('Not authenticated')
     }
+
+    console.log('Current auth user:', user.id)
 
     // Get the current user's role
     const { data: currentUser, error: userError } = await supabase
       .from('users')
-      .select('role')
+      .select('role, user_id')
       .eq('user_id', user.id)
       .single()
 
     if (userError) {
-      throw userError
+      console.error('User fetch error:', userError)
+      throw new Error('Could not fetch user role')
     }
+
+    if (!currentUser) {
+      console.error('No user found in database')
+      throw new Error('User not found in database')
+    }
+
+    console.log('Current user role:', currentUser.role)
 
     // If user is an agent, only return themselves
     if (currentUser.role === 'agent') {
+      console.log('User is an agent, fetching their own details')
       const { data: agent, error: agentError } = await supabase
         .from('users')
         .select('user_id, name, email, role')
@@ -246,26 +272,51 @@ export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () 
         .single()
 
       if (agentError) {
-        throw agentError
+        console.error('Agent fetch error:', agentError)
+        throw new Error('Could not fetch agent details')
       }
 
-      return [agent]
+      console.log('Agent details:', agent)
+      return agent ? [agent] : []
     }
 
     // If user is an admin, return all agents and admins
-    const { data: agents, error: agentsError } = await supabase
+    console.log('User is an admin, fetching all agents and admins')
+    
+    // First get all agents
+    const { data: agentUsers, error: agentError } = await supabase
       .from('users')
       .select('user_id, name, email, role')
-      .in('role', ['agent', 'admin'])
-      .order('name')
+      .eq('role', 'agent')
 
-    if (agentsError) {
-      throw agentsError
+    if (agentError) {
+      console.error('Agent fetch error:', agentError)
+      throw new Error('Could not fetch agents')
     }
 
-    return agents || []
+    console.log('Found agents:', agentUsers?.length || 0)
+
+    // Then get all admins
+    const { data: adminUsers, error: adminError } = await supabase
+      .from('users')
+      .select('user_id, name, email, role')
+      .eq('role', 'admin')
+
+    if (adminError) {
+      console.error('Admin fetch error:', adminError)
+      throw new Error('Could not fetch admins')
+    }
+
+    console.log('Found admins:', adminUsers?.length || 0)
+
+    // Combine and sort the results
+    const allUsers = [...(agentUsers || []), ...(adminUsers || [])]
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+
+    console.log('Total users found:', allUsers.length)
+    return allUsers
   } catch (error) {
     console.error('Server action error:', error)
-    throw error
+    throw error instanceof Error ? error : new Error('An unexpected error occurred')
   }
 } 

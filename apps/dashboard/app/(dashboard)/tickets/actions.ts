@@ -35,16 +35,14 @@ export async function fetchTickets(filters: TicketFilters) {
 
     // Apply role-based filtering to count query
     if (userData.role === 'agent') {
-      countQuery = countQuery.or(
-        `assigned_to.eq.${userData.user_id},` +
-        `and(assigned_to.is.null,created_by.neq.${userData.user_id})`
-      )
+      countQuery = countQuery.or(`assigned_to.eq.${userData.user_id},assigned_to.is.null`)
+        .not('created_by', 'eq', userData.user_id)
     }
 
     const { count, error: countError } = await countQuery
     if (countError) {
       console.error('Count query error:', countError)
-      throw new Error('Failed to count tickets')
+      throw new Error(`Failed to count tickets: ${countError.message}`)
     }
 
     // Then get paginated results with all fields
@@ -61,10 +59,8 @@ export async function fetchTickets(filters: TicketFilters) {
       // Agents see:
       // 1. Tickets assigned to them
       // 2. Unassigned tickets (except ones they created as a customer)
-      query = query.or(
-        `assigned_to.eq.${userData.user_id},` +
-        `and(assigned_to.is.null,created_by.neq.${userData.user_id})`
-      )
+      query = query.or(`assigned_to.eq.${userData.user_id},assigned_to.is.null`)
+        .not('created_by', 'eq', userData.user_id)
     }
 
     // Apply filters
@@ -123,7 +119,7 @@ export async function fetchTickets(filters: TicketFilters) {
     const { data: tickets, error: ticketsError } = await query
     if (ticketsError) {
       console.error('Tickets query error:', ticketsError)
-      throw new Error('Failed to fetch tickets')
+      throw new Error(`Failed to fetch tickets: ${ticketsError.message}`)
     }
 
     return { tickets: tickets || [], total: count || 0 }

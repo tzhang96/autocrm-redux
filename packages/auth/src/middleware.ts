@@ -16,14 +16,12 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set(name, value)
-          })
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value)
+            supabaseResponse.cookies.set(name, value, options)
           )
         },
       },
@@ -46,7 +44,14 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
     
     // Copy cookies from supabaseResponse to the redirect response
     supabaseResponse.cookies.getAll().forEach((cookie) => {
-      response.cookies.set(cookie.name, cookie.value)
+      response.cookies.set(cookie.name, cookie.value, {
+        domain: cookie.domain,
+        httpOnly: cookie.httpOnly,
+        maxAge: cookie.maxAge,
+        path: cookie.path,
+        sameSite: cookie.sameSite,
+        secure: cookie.secure
+      })
     })
     
     return response
@@ -92,7 +97,14 @@ export async function updateSession(request: NextRequest, config: AuthConfig) {
       
       // Copy cookies from supabaseResponse to the redirect response
       supabaseResponse.cookies.getAll().forEach((cookie) => {
-        response.cookies.set(cookie.name, cookie.value)
+        response.cookies.set(cookie.name, cookie.value, {
+          domain: cookie.domain,
+          httpOnly: cookie.httpOnly,
+          maxAge: cookie.maxAge,
+          path: cookie.path,
+          sameSite: cookie.sameSite,
+          secure: cookie.secure
+        })
       })
       
       return response

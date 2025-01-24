@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import { DashboardTicketList } from '@autocrm/ui'
-import { Ticket, TicketStatus, TicketPriority } from '@autocrm/core'
+import { TicketWithUsers, TicketStatus, TicketPriority } from '@autocrm/core'
 import { useRouter } from 'next/navigation'
 import { fetchTickets } from '../actions'
 
@@ -20,7 +20,7 @@ type SortOrder = 'asc' | 'desc'
 
 export default function TicketsListPage() {
   const router = useRouter()
-  const [tickets, setTickets] = useState<Ticket[]>([])
+  const [tickets, setTickets] = useState<TicketWithUsers[]>([])
   const [totalTickets, setTotalTickets] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -217,7 +217,24 @@ export default function TicketsListPage() {
               >
                 <option value="">All Tickets</option>
                 <option value="unassigned">Unassigned</option>
-                {/* TODO: Add list of agents */}
+                {tickets.map(ticket => 
+                  ticket.assigned_to_user && (
+                    <option 
+                      key={ticket.assigned_to_user.id} 
+                      value={ticket.assigned_to_user.id}
+                    >
+                      {ticket.assigned_to_user.name ? 
+                        `${ticket.assigned_to_user.name} (${ticket.assigned_to_user.email})` : 
+                        ticket.assigned_to_user.email
+                      }
+                    </option>
+                  )
+                ).filter((option, index, self) => 
+                  // Remove duplicates based on user_id
+                  option && self.findIndex(o => 
+                    o?.props.value === option.props.value
+                  ) === index
+                )}
               </select>
             </div>
 

@@ -59,10 +59,25 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
   useEffect(() => {
     const loadAgents = async () => {
       try {
+        setIsLoading(true)
+        console.log('Starting to load agents...')
         const agents = await ticketActions.getAvailableAgents()
+        console.log('Server response:', agents)
+        if (!Array.isArray(agents)) {
+          console.error('Expected array of agents but got:', typeof agents)
+          throw new Error('Invalid response format')
+        }
         setAvailableAgents(agents)
+        console.log('Successfully set agents:', agents.length)
       } catch (err) {
         console.error('Failed to load agents:', err)
+        if (err instanceof Error) {
+          console.error('Error details:', err.message)
+          console.error('Error stack:', err.stack)
+        }
+        setError('Failed to load available agents. Please try again.')
+      } finally {
+        setIsLoading(false)
       }
     }
     loadAgents()
@@ -124,8 +139,12 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
     if (isLoading) return;
     try {
       setIsLoading(true);
-      await ticketActions.assignTicket(ticket.ticket_id, agentId === '' ? null : agentId);
-      setTicket({ ...ticket, assigned_to: agentId === '' ? undefined : agentId });
+      const newAssignedTo = agentId === '' ? null : agentId;
+      await ticketActions.assignTicket(ticket.ticket_id, newAssignedTo);
+      setTicket({ 
+        ...ticket, 
+        assigned_to: newAssignedTo === null ? undefined : newAssignedTo 
+      });
       router.refresh();
       toast.success('Ticket assignment updated successfully');
     } catch (err) {
@@ -297,19 +316,40 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-gray-500">Assigned to:</span>
-              <select
-                value={ticket.assigned_to ?? ''}
-                onChange={(e) => handleAssignmentChange(e.target.value)}
-                disabled={isLoading || availableAgents.length === 0}
-                className="w-[200px] rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50"
-              >
-                <option value="">Unassigned</option>
-                {availableAgents.map((agent) => (
-                  <option key={agent.user_id} value={agent.user_id}>
-                    {agent.name}
-                  </option>
-                ))}
-              </select>
+              {availableAgents.length > 0 && availableAgents[0].role === 'agent' ? (
+                ticket.assigned_to === availableAgents[0].user_id ? (
+                  <span className="text-sm text-gray-700">Assigned to you</span>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAssignmentChange(availableAgents[0].user_id)}
+                    disabled={isLoading}
+                  >
+                    Assign to Self
+                  </Button>
+                )
+              ) : (
+                <select
+                  value={ticket.assigned_to ?? ''}
+                  onChange={(e) => handleAssignmentChange(e.target.value)}
+                  disabled={isLoading || availableAgents.length === 0}
+                  className="w-[200px] rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50"
+                >
+                  <option value="">Unassigned</option>
+                  {availableAgents.map((agent) => (
+                    <option key={agent.user_id} value={agent.user_id}>
+                      {agent.name ? `${agent.name} (${agent.email})` : agent.email}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {availableAgents.length === 0 && !isLoading && (
+                <span className="text-sm text-gray-500">No agents available</span>
+              )}
+              {isLoading && (
+                <span className="text-sm text-gray-500">Loading...</span>
+              )}
             </div>
           </div>
         </div>

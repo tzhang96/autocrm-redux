@@ -1,11 +1,11 @@
 'use client'
 
-import { Ticket, TicketPriority, TicketStatus } from '@autocrm/core'
+import { TicketWithUsers, TicketPriority, TicketStatus } from '@autocrm/core'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 interface DashboardTicketListProps {
-  tickets: Ticket[]
+  tickets: TicketWithUsers[]
   onTicketClick?: (ticketId: string) => void
   onSelectionChange?: (selectedIds: string[]) => void
   sortBy?: string
@@ -68,7 +68,7 @@ export function DashboardTicketList({
   const router = useRouter()
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set())
 
-  const handleTicketClick = (ticket: Ticket) => {
+  const handleTicketClick = (ticket: TicketWithUsers) => {
     if (!ticket.ticket_id) {
       console.error('Invalid ticket ID')
       return
@@ -172,7 +172,11 @@ export function DashboardTicketList({
               </td>
               <td className="w-[10%] px-3 py-4">
                 <div className="text-gray-500 text-sm truncate">
-                  {ticket.assigned_to || 'Unassigned'}
+                  {ticket.assigned_to_user ? (
+                    ticket.assigned_to_user.name && ticket.assigned_to_user.name !== null ? 
+                      `${ticket.assigned_to_user.name} (${ticket.assigned_to_user.email})` : 
+                      ticket.assigned_to_user.email
+                  ) : 'Unassigned'}
                 </div>
               </td>
               <td className="w-[10%] px-3 py-4">
