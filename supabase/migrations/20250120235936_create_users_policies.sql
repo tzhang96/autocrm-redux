@@ -12,7 +12,7 @@ CREATE POLICY "Admins can read all users"
   ON users
   FOR SELECT
   USING (
-    auth.jwt() ->> 'role' = 'admin'
+    (auth.jwt() -> 'user_metadata' ->> 'role')::text = 'admin'
   );
 
 -- Policy to allow the trigger to create users
