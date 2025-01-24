@@ -110,7 +110,7 @@ export function DashboardTicketList({
               <input
                 type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
-                checked={selectedTickets.size === tickets.length}
+                checked={tickets.length > 0 && selectedTickets.size === tickets.length}
                 onChange={handleSelectAll}
               />
             </th>
