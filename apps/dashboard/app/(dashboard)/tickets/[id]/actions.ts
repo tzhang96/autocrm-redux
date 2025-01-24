@@ -231,6 +231,7 @@ export const assignTicket: TicketActions['assignTicket'] = async (
 }
 
 export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () => {
+  'use server'
   try {
     console.log('=== Starting getAvailableAgents ===')
     const supabase = await createServerSupabaseClient()

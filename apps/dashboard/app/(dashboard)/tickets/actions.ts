@@ -1,7 +1,8 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/utils/supabase-server'
-import { TicketFilters } from '@autocrm/core'
+import { TicketFilters, TicketStatus, TicketPriority } from '@autocrm/core'
+import { redirect } from 'next/navigation'
 
 export async function fetchTickets(filters: TicketFilters) {
   const supabase = await createServerSupabaseClient()
@@ -126,5 +127,180 @@ export async function fetchTickets(filters: TicketFilters) {
   } catch (error) {
     console.error('Fetch tickets error:', error)
     throw error instanceof Error ? error : new Error('An unexpected error occurred')
+  }
+}
+
+export async function bulkUpdateTicketStatus(
+  ticket_ids: string[],
+  status: TicketStatus
+) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      redirect('/auth/sign-in')
+    }
+
+    // Update tickets status
+    const { error: updateError } = await supabase
+      .from('tickets')
+      .update({ 
+        status,
+        last_activity_at: new Date().toISOString()
+      })
+      .in('ticket_id', ticket_ids)
+
+    if (updateError) {
+      throw updateError
+    }
+
+    // Add system messages for each ticket
+    const messages = ticket_ids.map(ticket_id => ({
+      ticket_id,
+      user_id: user.id,
+      content: `Status changed to ${status}`,
+      message_type: 'status_change',
+      visibility: 'public'
+    }))
+
+    const { error: messageError } = await supabase
+      .from('messages')
+      .insert(messages)
+
+    if (messageError) {
+      throw messageError
+    }
+  } catch (error) {
+    console.error('Server action error:', error)
+    throw error
+  }
+}
+
+export async function bulkUpdateTicketPriority(
+  ticket_ids: string[],
+  priority: TicketPriority
+) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      redirect('/auth/sign-in')
+    }
+
+    // Update tickets priority
+    const { error: updateError } = await supabase
+      .from('tickets')
+      .update({ 
+        priority,
+        last_activity_at: new Date().toISOString()
+      })
+      .in('ticket_id', ticket_ids)
+
+    if (updateError) {
+      throw updateError
+    }
+
+    // Add system messages for each ticket
+    const messages = ticket_ids.map(ticket_id => ({
+      ticket_id,
+      user_id: user.id,
+      content: `Priority changed to ${priority}`,
+      message_type: 'system',
+      visibility: 'public'
+    }))
+
+    const { error: messageError } = await supabase
+      .from('messages')
+      .insert(messages)
+
+    if (messageError) {
+      throw messageError
+    }
+  } catch (error) {
+    console.error('Server action error:', error)
+    throw error
+  }
+}
+
+export async function bulkAssignTickets(
+  ticket_ids: string[],
+  agent_id: string | null
+) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      redirect('/auth/sign-in')
+    }
+
+    // Get the current user's role
+    const { data: currentUser, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+
+    if (userError) {
+      throw userError
+    }
+
+    // Check permissions
+    if (currentUser.role !== 'admin') {
+      // Agents can only assign themselves and cannot unassign
+      if (agent_id === null) {
+        throw new Error('Only administrators can unassign tickets')
+      }
+      if (agent_id !== user.id) {
+        throw new Error('Agents can only assign tickets to themselves')
+      }
+    }
+
+    // Update tickets assignment
+    const { error: updateError } = await supabase
+      .from('tickets')
+      .update({ 
+        assigned_to: agent_id,
+        last_activity_at: new Date().toISOString()
+      })
+      .in('ticket_id', ticket_ids)
+
+    if (updateError) {
+      throw updateError
+    }
+
+    // Get agent name if assigning
+    let assignmentMessage = 'Ticket unassigned'
+    if (agent_id) {
+      const { data: agent } = await supabase
+        .from('users')
+        .select('name, email')
+        .eq('user_id', agent_id)
+        .single()
+
+      assignmentMessage = `Ticket assigned to ${agent?.name || agent?.email || 'unknown agent'}`
+    }
+
+    // Add system messages for each ticket
+    const messages = ticket_ids.map(ticket_id => ({
+      ticket_id,
+      user_id: user.id,
+      content: assignmentMessage,
+      message_type: 'assignment_change',
+      visibility: 'public'
+    }))
+
+    const { error: messageError } = await supabase
+      .from('messages')
+      .insert(messages)
+
+    if (messageError) {
+      throw messageError
+    }
+  } catch (error) {
+    console.error('Server action error:', error)
+    throw error
   }
 } 

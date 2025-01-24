@@ -5,6 +5,8 @@ import { DashboardTicketList } from '@autocrm/ui'
 import { TicketWithUsers, TicketStatus, TicketPriority } from '@autocrm/core'
 import { useRouter } from 'next/navigation'
 import { fetchTickets } from '../actions'
+import { BulkActions } from './_components/BulkActions'
+import { getAvailableAgents } from '../[id]/actions'
 
 const statusOptions: TicketStatus[] = ['open', 'pending', 'resolved', 'closed']
 const priorityOptions: TicketPriority[] = ['low', 'medium', 'high']
@@ -25,6 +27,12 @@ export default function TicketsListPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTickets, setSelectedTickets] = useState<string[]>([])
+  const [availableAgents, setAvailableAgents] = useState<Array<{
+    user_id: string
+    name: string | null
+    email: string
+    role: 'agent' | 'admin'
+  }>>([])
   const [isPending, startTransition] = useTransition()
   const [filters, setFilters] = useState({
     limit: 10,
@@ -75,10 +83,20 @@ export default function TicketsListPage() {
     }
   }, [filters])
 
+  const loadAgents = useCallback(async () => {
+    try {
+      const agents = await getAvailableAgents()
+      setAvailableAgents(agents)
+    } catch (err) {
+      console.error('Failed to load agents:', err)
+    }
+  }, [])
+
   useEffect(() => {
     const cleanup = loadTickets()
+    loadAgents()
     return cleanup
-  }, [loadTickets])
+  }, [loadTickets, loadAgents])
 
   const handleFilterChange = (key: keyof typeof filters, value: any) => {
     // Debounce search input changes
@@ -110,6 +128,11 @@ export default function TicketsListPage() {
     setSelectedTickets(selectedIds)
   }
 
+  const handleBulkActionComplete = () => {
+    setSelectedTickets([])
+    loadTickets()
+  }
+
   const toggleSortOrder = () => {
     const newOrder: SortOrder = filters.sortOrder === 'asc' ? 'desc' : 'asc'
     handleFilterChange('sortOrder', newOrder)
@@ -125,16 +148,11 @@ export default function TicketsListPage() {
               <span className="text-sm text-gray-500">
                 {selectedTickets.length} selected
               </span>
-              <button
-                type="button"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={() => {
-                  // TODO: Implement bulk actions
-                  console.log('Bulk action for tickets:', selectedTickets)
-                }}
-              >
-                Bulk Actions
-              </button>
+              <BulkActions
+                selectedTickets={selectedTickets}
+                availableAgents={availableAgents}
+                onActionComplete={handleBulkActionComplete}
+              />
             </div>
           )}
         </div>
