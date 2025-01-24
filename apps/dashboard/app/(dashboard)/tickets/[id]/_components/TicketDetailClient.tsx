@@ -1,35 +1,81 @@
 'use client'
 
-import { Message, Ticket } from '@autocrm/core'
-import { useState } from 'react'
-import { sendMessage } from '../actions'
+import { Message, Ticket, TicketStatus, TicketPriority } from '@autocrm/core'
+import { useState, useEffect } from 'react'
+import * as ticketActions from '@/app/(dashboard)/tickets/[id]/actions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import ReactMarkdown from 'react-markdown'
+import ReactMarkdown, { Components } from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import rehypeSanitize from 'rehype-sanitize'
 import { MessageEditor } from './MessageEditor'
+import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
+
+interface Agent {
+  user_id: string
+  name: string
+  email: string
+  role: 'agent' | 'admin'
+}
 
 interface TicketDetailClientProps {
   ticket: Ticket
   initialMessages: Message[]
 }
 
-export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClientProps) {
+const statusOptions: TicketStatus[] = ['open', 'pending', 'resolved', 'closed']
+const priorityOptions: TicketPriority[] = ['low', 'medium', 'high']
+
+const MarkdownComponents: Components = {
+  p: (props) => <p className="my-2" {...props} />,
+  a: (props) => <a className="text-blue-600 hover:underline" {...props} />,
+  ul: (props) => <ul className="list-disc pl-4 my-2" {...props} />,
+  ol: (props) => <ol className="list-decimal pl-4 my-2" {...props} />,
+  li: (props) => <li className="my-1" {...props} />,
+  h1: (props) => <h1 className="text-2xl font-bold my-4" {...props} />,
+  h2: (props) => <h2 className="text-xl font-bold my-3" {...props} />,
+  h3: (props) => <h3 className="text-lg font-bold my-2" {...props} />,
+  blockquote: (props) => <blockquote className="border-l-4 border-gray-200 pl-4 my-2 italic" {...props} />,
+  pre: (props) => <pre className="bg-gray-100 p-4 rounded-md my-2 overflow-x-auto" {...props} />,
+  code: (props) => {
+    const isInline = !props.node?.position?.start.line
+    return isInline 
+      ? <code className="bg-gray-100 px-1 rounded" {...props} />
+      : <code className="block" {...props} />
+  },
+}
+
+export function TicketDetailClient({ ticket: initialTicket, initialMessages }: TicketDetailClientProps) {
+  const router = useRouter()
+  const [ticket, setTicket] = useState(initialTicket)
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isLoading, setIsLoading] = useState(false)
   const [messageContent, setMessageContent] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
 
-  const handleSendMessage = async () => {
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        const agents = await ticketActions.getAvailableAgents()
+        setAvailableAgents(agents)
+      } catch (err) {
+        console.error('Failed to load agents:', err)
+      }
+    }
+    loadAgents()
+  }, [])
+
+  const handleSendMessage = async (visibility: 'public' | 'internal') => {
     const content = messageContent.trim()
     if (!content || isLoading) return
 
     try {
       setIsLoading(true)
       setError(null)
-      const updatedMessages = await sendMessage(ticket.ticket_id, content)
+      const updatedMessages = await ticketActions.sendMessage(ticket.ticket_id, content, visibility)
       setMessages(updatedMessages)
       setMessageContent('')
     } catch (err) {
@@ -39,6 +85,57 @@ export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClie
       setIsLoading(false)
     }
   }
+
+  const handleStatusChange = async (newStatus: TicketStatus) => {
+    if (isLoading || ticket.status === newStatus) return
+
+    try {
+      setIsLoading(true)
+      setError(null)
+      await ticketActions.updateTicketStatus(ticket.ticket_id, newStatus)
+      setTicket({ ...ticket, status: newStatus })
+      router.refresh() // Refresh the page to get updated messages
+    } catch (err) {
+      console.error('Client error:', err)
+      setError('Failed to update ticket status. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handlePriorityChange = async (newPriority: TicketPriority) => {
+    if (isLoading || ticket.priority === newPriority) return
+
+    try {
+      setIsLoading(true)
+      setError(null)
+      await ticketActions.updateTicketPriority(ticket.ticket_id, newPriority)
+      setTicket({ ...ticket, priority: newPriority })
+      router.refresh() // Refresh the page to get updated messages
+    } catch (err) {
+      console.error('Client error:', err)
+      setError('Failed to update ticket priority. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleAssignmentChange = async (agentId: string) => {
+    if (isLoading) return;
+    try {
+      setIsLoading(true);
+      await ticketActions.assignTicket(ticket.ticket_id, agentId === '' ? null : agentId);
+      setTicket({ ...ticket, assigned_to: agentId === '' ? undefined : agentId });
+      router.refresh();
+      toast.success('Ticket assignment updated successfully');
+    } catch (err) {
+      console.error('Client error:', err);
+      setError('Failed to update ticket assignment. Please try again.');
+      toast.error('Failed to update ticket assignment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString()
@@ -70,6 +167,12 @@ export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClie
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const getAssignedAgentName = () => {
+    if (!ticket.assigned_to) return null
+    const agent = availableAgents.find(a => a.user_id === ticket.assigned_to)
+    return agent ? agent.name : 'Unknown Agent'
   }
 
   return (
@@ -106,27 +209,7 @@ export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClie
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 prose prose-sm max-w-none">
               <ReactMarkdown 
                 rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                components={{
-                  p: ({node, ...props}) => <p className="my-2" {...props} />,
-                  a: ({node, ...props}) => <a className="text-blue-600 hover:underline" {...props} />,
-                  ul: ({node, ...props}) => <ul className="list-disc pl-4 my-2" {...props} />,
-                  ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-2" {...props} />,
-                  li: ({node, ...props}) => <li className="my-1" {...props} />,
-                  h1: ({node, ...props}) => <h1 className="text-2xl font-bold my-4" {...props} />,
-                  h2: ({node, ...props}) => <h2 className="text-xl font-bold my-3" {...props} />,
-                  h3: ({node, ...props}) => <h3 className="text-lg font-bold my-2" {...props} />,
-                  blockquote: ({node, ...props}) => (
-                    <blockquote className="border-l-4 border-gray-200 pl-4 my-2 italic" {...props} />
-                  ),
-                  pre: ({node, ...props}) => (
-                    <pre className="bg-gray-100 p-4 rounded-md my-2 overflow-x-auto" {...props} />
-                  ),
-                  code: ({node, inline, ...props}) => (
-                    inline 
-                      ? <code className="bg-gray-100 px-1 rounded" {...props} />
-                      : <code className="block" {...props} />
-                  ),
-                }}
+                components={MarkdownComponents}
               >
                 {ticket.description}
               </ReactMarkdown>
@@ -167,24 +250,7 @@ export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClie
               <div className="text-sm text-gray-900 prose prose-sm max-w-none">
                 <ReactMarkdown 
                   rehypePlugins={[rehypeRaw, rehypeSanitize]}
-                  components={{
-                    p: ({node, ...props}) => <p className="my-2" {...props} />,
-                    a: ({node, ...props}) => <a className="text-blue-600 hover:underline" {...props} />,
-                    ul: ({node, ...props}) => <ul className="list-disc pl-4 my-2" {...props} />,
-                    ol: ({node, ...props}) => <ol className="list-decimal pl-4 my-2" {...props} />,
-                    li: ({node, ...props}) => <li className="my-1" {...props} />,
-                    blockquote: ({node, ...props}) => (
-                      <blockquote className="border-l-4 border-gray-200 pl-4 my-2 italic" {...props} />
-                    ),
-                    pre: ({node, ...props}) => (
-                      <pre className="bg-gray-100 p-4 rounded-md my-2 overflow-x-auto" {...props} />
-                    ),
-                    code: ({node, inline, ...props}) => (
-                      inline 
-                        ? <code className="bg-gray-100 px-1 rounded" {...props} />
-                        : <code className="block" {...props} />
-                    ),
-                  }}
+                  components={MarkdownComponents}
                 >
                   {message.content}
                 </ReactMarkdown>
@@ -193,11 +259,66 @@ export function TicketDetailClient({ ticket, initialMessages }: TicketDetailClie
           ))}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8 border-t pt-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-500">Status:</span>
+              <div className="flex gap-2">
+                {statusOptions.map((status) => (
+                  <Button
+                    key={status}
+                    variant={ticket.status === status ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleStatusChange(status)}
+                    disabled={isLoading || ticket.status === status}
+                    className={ticket.status === status ? getStatusColor(status) : undefined}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-500">Priority:</span>
+              <div className="flex gap-2">
+                {priorityOptions.map((priority) => (
+                  <Button
+                    key={priority}
+                    variant={ticket.priority === priority ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePriorityChange(priority)}
+                    disabled={isLoading || ticket.priority === priority}
+                    className={ticket.priority === priority ? getPriorityColor(priority) : undefined}
+                  >
+                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-500">Assigned to:</span>
+              <select
+                value={ticket.assigned_to ?? ''}
+                onChange={(e) => handleAssignmentChange(e.target.value)}
+                disabled={isLoading || availableAgents.length === 0}
+                className="w-[200px] rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50"
+              >
+                <option value="">Unassigned</option>
+                {availableAgents.map((agent) => (
+                  <option key={agent.user_id} value={agent.user_id}>
+                    {agent.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
           <MessageEditor
             content={messageContent}
             onChange={setMessageContent}
-            onSubmit={handleSendMessage}
+            onSubmit={(visibility) => handleSendMessage(visibility)}
             disabled={isLoading}
           />
           {error && (

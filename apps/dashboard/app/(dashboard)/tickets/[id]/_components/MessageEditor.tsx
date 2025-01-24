@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
@@ -20,12 +21,14 @@ import {
   Quote,
   Undo,
   Redo,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 interface MessageEditorProps {
   content: string
   onChange: (content: string) => void
-  onSubmit: () => void
+  onSubmit: (visibility: 'public' | 'internal') => void
   disabled?: boolean
   placeholder?: string
 }
@@ -67,6 +70,7 @@ export function MessageEditor({
   disabled = false,
   placeholder = "Write your message here..." 
 }: MessageEditorProps) {
+  const [isInternal, setIsInternal] = React.useState(false)
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -245,11 +249,34 @@ export function MessageEditor({
       <EditorContent editor={editor} />
 
       <div className="flex justify-between items-center p-2 border-t bg-muted/50">
-        <p className="text-sm text-muted-foreground">
-          Use Markdown shortcuts (e.g., ** for bold, * for italic)
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            Use Markdown shortcuts (e.g., ** for bold, * for italic)
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsInternal(!isInternal)}
+            className={cn(
+              "gap-2",
+              isInternal && "bg-yellow-100 hover:bg-yellow-200 text-yellow-900"
+            )}
+          >
+            {isInternal ? (
+              <>
+                <EyeOff className="h-4 w-4" />
+                Internal Note
+              </>
+            ) : (
+              <>
+                <Eye className="h-4 w-4" />
+                Public Message
+              </>
+            )}
+          </Button>
+        </div>
         <Button
-          onClick={onSubmit}
+          onClick={() => onSubmit(isInternal ? 'internal' : 'public')}
           disabled={disabled || !editor.getText().trim()}
           size="sm"
         >
