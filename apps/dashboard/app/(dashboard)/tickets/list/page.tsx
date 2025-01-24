@@ -38,27 +38,46 @@ export default function TicketsListPage() {
     tags: [] as string[]
   })
 
-  const loadTickets = useCallback(async () => {
-    try {
-      setError(null)
-      setLoading(true)
+  const loadTickets = useCallback(() => {
+    let isMounted = true
+    
+    const load = async () => {
+      if (!isMounted) return
       
-      // Use startTransition to avoid UI freezing during server action
-      startTransition(async () => {
-        const { tickets: newTickets, total } = await fetchTickets(filters)
-        setTickets(newTickets)
-        setTotalTickets(total)
-      })
-    } catch (err) {
-      console.error('Failed to load tickets:', err)
-      setError('Failed to load tickets. Please try again.')
-    } finally {
-      setLoading(false)
+      try {
+        setError(null)
+        setLoading(true)
+        
+        const result = await fetchTickets(filters)
+        
+        if (isMounted) {
+          setTickets(result.tickets)
+          setTotalTickets(result.total)
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error('Failed to load tickets:', err)
+          setError('Failed to load tickets. Please try again.')
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    startTransition(() => {
+      load()
+    })
+
+    return () => {
+      isMounted = false
     }
   }, [filters])
 
   useEffect(() => {
-    loadTickets()
+    const cleanup = loadTickets()
+    return cleanup
   }, [loadTickets])
 
   const handleFilterChange = (key: keyof typeof filters, value: any) => {
