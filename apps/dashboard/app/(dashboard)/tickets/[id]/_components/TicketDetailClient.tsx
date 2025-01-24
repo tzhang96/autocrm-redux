@@ -247,7 +247,9 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
             >
               <div className="flex justify-between items-start mb-2">
                 <div className="text-sm text-gray-500">
-                  From: {message.user?.name || message.user?.email || message.user_id}
+                  From: {message.user?.role === 'customer' 
+                    ? `${message.user?.name || 'Customer'} (${message.user?.email})` 
+                    : message.user?.name || message.user?.email || message.user_id}
                   {message.is_ai_generated && (
                     <Badge className="ml-2 bg-purple-100 text-purple-800">
                       AI Generated
