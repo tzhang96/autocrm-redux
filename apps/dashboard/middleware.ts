@@ -1,7 +1,7 @@
 import { updateSession } from '@autocrm/auth'
-import { type NextRequest } from 'next/server'
+import { type NextRequest, type NextResponse } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest): Promise<NextResponse> {
   return updateSession(request, {
     redirects: {
       signIn: '/login',
