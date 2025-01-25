@@ -3,11 +3,11 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
-  dts: false,
+  dts: true,
   splitting: true,
   sourcemap: true,
   clean: true,
-  external: ['react'],
+  external: ['react', 'next'],
   esbuildOptions(options) {
     options.tsconfig = './tsconfig.json'
     options.banner = {
