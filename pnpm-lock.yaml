@@ -140,13 +140,13 @@ importers:
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
       '@types/node':
-        specifier: ^20.0.0
+        specifier: 20.17.14
         version: 20.17.14
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 18.3.18
         version: 18.3.18
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 18.3.5
         version: 18.3.5(@types/react@18.3.18)
       autoprefixer:
         specifier: ^10.0.0
