@@ -90,6 +90,15 @@ importers:
       '@tiptap/starter-kit':
         specifier: ^2.1.13
         version: 2.11.3
+      '@types/node':
+        specifier: 20.17.14
+        version: 20.17.14
+      '@types/react':
+        specifier: 18.3.18
+        version: 18.3.18
+      '@types/react-dom':
+        specifier: 18.3.5
+        version: 18.3.5(@types/react@18.3.18)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -139,15 +148,6 @@ importers:
       '@tailwindcss/typography':
         specifier: ^0.5.16
         version: 0.5.16(tailwindcss@3.4.17)
-      '@types/node':
-        specifier: 20.17.14
-        version: 20.17.14
-      '@types/react':
-        specifier: 18.3.18
-        version: 18.3.18
-      '@types/react-dom':
-        specifier: 18.3.5
-        version: 18.3.5(@types/react@18.3.18)
       autoprefixer:
         specifier: ^10.0.0
         version: 10.4.20(postcss@8.5.1)
