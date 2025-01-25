@@ -1,9 +1,12 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/utils/supabase-server'
+import { createServerClient } from '@autocrm/auth'
 import { redirect } from 'next/navigation'
 import { Message, TicketStatus, TicketPriority } from '@autocrm/core'
 import type { TicketActions } from './types'
+import { Database } from '@autocrm/core'
+
+type Ticket = Database['public']['Tables']['tickets']['Row']
 
 export const sendMessage: TicketActions['sendMessage'] = async (
   ticket_id, 
@@ -11,7 +14,7 @@ export const sendMessage: TicketActions['sendMessage'] = async (
   visibility = 'public'
 ) => {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -66,7 +69,7 @@ export const updateTicketStatus: TicketActions['updateTicketStatus'] = async (
   status
 ) => {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -111,7 +114,7 @@ export const updateTicketPriority: TicketActions['updateTicketPriority'] = async
   priority
 ) => {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -156,7 +159,7 @@ export const assignTicket: TicketActions['assignTicket'] = async (
   agent_id: string | null
 ) => {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -234,7 +237,7 @@ export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () 
   'use server'
   try {
     console.log('=== Starting getAvailableAgents ===')
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {
@@ -319,5 +322,53 @@ export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () 
   } catch (error) {
     console.error('Server action error:', error)
     throw error instanceof Error ? error : new Error('An unexpected error occurred')
+  }
+}
+
+export async function getTicket(ticketId: string) {
+  try {
+    const supabase = await createServerClient()
+    const { data: ticket, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .single()
+
+    if (error) throw error
+    return ticket
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function updateTicket(ticketId: string, updates: Partial<Ticket>) {
+  try {
+    const supabase = await createServerClient()
+    const { error } = await supabase
+      .from('tickets')
+      .update(updates)
+      .eq('ticket_id', ticketId)
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    throw error
+  }
+}
+
+export async function addMessage(ticketId: string, content: string) {
+  try {
+    const supabase = await createServerClient()
+    const { error } = await supabase
+      .from('messages')
+      .insert({
+        ticket_id: ticketId,
+        content,
+      })
+
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    throw error
   }
 } 

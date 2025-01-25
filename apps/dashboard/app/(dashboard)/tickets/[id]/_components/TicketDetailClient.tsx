@@ -139,11 +139,11 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
     if (isLoading) return;
     try {
       setIsLoading(true);
-      const newAssignedTo = agentId === '' ? null : agentId;
-      await ticketActions.assignTicket(ticket.ticket_id, newAssignedTo);
+      const newAssigned_to = agentId === '' ? null : agentId;
+      await ticketActions.assignTicket(ticket.ticket_id, newAssigned_to);
       setTicket({ 
         ...ticket, 
-        assigned_to: newAssignedTo === null ? undefined : newAssignedTo 
+        assigned_to: newAssigned_to === null ? undefined : newAssigned_to 
       });
       router.refresh();
       toast.success('Ticket assignment updated successfully');
@@ -192,6 +192,31 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
     if (!ticket.assigned_to) return null
     const agent = availableAgents.find(a => a.user_id === ticket.assigned_to)
     return agent ? agent.name : 'Unknown Agent'
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      await ticketActions.updateTicket(ticket.ticket_id, {
+        status: ticket.status,
+        priority: ticket.priority,
+        assigned_to: ticket.assigned_to,
+      })
+      toast.success('Ticket updated successfully')
+    } catch (error) {
+      toast.error('Failed to update ticket')
+    }
+  }
+
+  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    try {
+      await ticketActions.addMessage(ticket.ticket_id, messageContent)
+      setMessageContent('')
+      toast.success('Message sent successfully')
+    } catch (error) {
+      toast.error('Failed to send message')
+    }
   }
 
   return (
