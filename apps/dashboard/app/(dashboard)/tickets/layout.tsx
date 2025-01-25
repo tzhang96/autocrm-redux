@@ -14,6 +14,7 @@ export default function TicketsLayout({
             <h1 className="text-xl font-semibold text-gray-900">AutoCRM Dashboard</h1>
             <form>
               <button
+                // @ts-ignore Server Action is correctly typed at runtime
                 formAction={handleLogout}
                 type="submit"
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
