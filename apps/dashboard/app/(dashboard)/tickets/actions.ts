@@ -73,8 +73,13 @@ export async function fetchTickets(filters: TicketFilters) {
       query = query.eq('priority', filters.priority)
     }
 
-    if (filters.assignedTo) {
-      query = query.eq('assigned_to', filters.assignedTo)
+    // Handle assigned_to filter
+    if (typeof filters.assignedTo !== 'undefined') {
+      if (filters.assignedTo === null) {
+        query = query.is('assigned_to', null)
+      } else {
+        query = query.eq('assigned_to', filters.assignedTo)
+      }
     }
 
     if (filters.createdBy) {
@@ -85,6 +90,7 @@ export async function fetchTickets(filters: TicketFilters) {
       query = query.contains('tags', filters.tags)
     }
 
+    // Apply sorting
     if (filters.sortBy) {
       const order = filters.sortOrder === 'desc' ? true : false
       switch (filters.sortBy) {
@@ -104,29 +110,26 @@ export async function fetchTickets(filters: TicketFilters) {
           query = query.order('status', { ascending: !order })
           break
       }
-    } else {
-      // Default sort by created_at desc
-      query = query.order('created_at', { ascending: false })
     }
 
     // Apply pagination
-    if (filters.limit) {
-      query = query.limit(filters.limit)
-    }
-    if (typeof filters.offset === 'number') {
-      query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1)
+    if (typeof filters.offset !== 'undefined' && filters.limit) {
+      query = query.range(filters.offset, filters.offset + filters.limit - 1)
     }
 
-    const { data: tickets, error: ticketsError } = await query
-    if (ticketsError) {
-      console.error('Tickets query error:', ticketsError)
-      throw new Error(`Failed to fetch tickets: ${ticketsError.message}`)
+    const { data: tickets, error } = await query
+    if (error) {
+      console.error('Ticket fetch error:', error)
+      throw new Error(`Failed to fetch tickets: ${error.message}`)
     }
 
-    return { tickets: tickets || [], total: count || 0 }
+    return {
+      tickets: tickets || [],
+      total: count || 0
+    }
   } catch (error) {
-    console.error('Fetch tickets error:', error)
-    throw error instanceof Error ? error : new Error('An unexpected error occurred')
+    console.error('fetchTickets error:', error)
+    throw error
   }
 }
 

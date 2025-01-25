@@ -287,41 +287,23 @@ export const getAvailableAgents: TicketActions['getAvailableAgents'] = async () 
     // If user is an admin, return all agents and admins
     console.log('User is an admin, fetching all agents and admins')
     
-    // First get all agents
-    const { data: agentUsers, error: agentError } = await supabase
+    // Get both agents and admins
+    const { data: users, error: usersError } = await supabase
       .from('users')
       .select('user_id, name, email, role')
-      .eq('role', 'agent')
+      .or('role.eq.agent,role.eq.admin')
+      .order('role', { ascending: false }) // admins first, then agents
 
-    if (agentError) {
-      console.error('Agent fetch error:', agentError)
-      throw new Error('Could not fetch agents')
+    if (usersError) {
+      console.error('Users fetch error:', usersError)
+      throw new Error('Could not fetch users')
     }
 
-    console.log('Found agents:', agentUsers?.length || 0)
-
-    // Then get all admins
-    const { data: adminUsers, error: adminError } = await supabase
-      .from('users')
-      .select('user_id, name, email, role')
-      .eq('role', 'admin')
-
-    if (adminError) {
-      console.error('Admin fetch error:', adminError)
-      throw new Error('Could not fetch admins')
-    }
-
-    console.log('Found admins:', adminUsers?.length || 0)
-
-    // Combine and sort the results
-    const allUsers = [...(agentUsers || []), ...(adminUsers || [])]
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-
-    console.log('Total users found:', allUsers.length)
-    return allUsers
+    console.log('Available users:', users)
+    return users || []
   } catch (error) {
-    console.error('Server action error:', error)
-    throw error instanceof Error ? error : new Error('An unexpected error occurred')
+    console.error('getAvailableAgents error:', error)
+    throw error
   }
 }
 

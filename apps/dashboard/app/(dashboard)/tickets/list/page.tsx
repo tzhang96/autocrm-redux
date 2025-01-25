@@ -235,24 +235,11 @@ export default function TicketsListPage() {
               >
                 <option value="">All Tickets</option>
                 <option value="unassigned">Unassigned</option>
-                {tickets.map(ticket => 
-                  ticket.assigned_to_user && (
-                    <option 
-                      key={ticket.assigned_to_user.id} 
-                      value={ticket.assigned_to_user.id}
-                    >
-                      {ticket.assigned_to_user.name ? 
-                        `${ticket.assigned_to_user.name} (${ticket.assigned_to_user.email})` : 
-                        ticket.assigned_to_user.email
-                      }
-                    </option>
-                  )
-                ).filter((option, index, self) => 
-                  // Remove duplicates based on user_id
-                  option && self.findIndex(o => 
-                    o?.props.value === option.props.value
-                  ) === index
-                )}
+                {availableAgents.map((agent) => (
+                  <option key={agent.user_id} value={agent.user_id}>
+                    {agent.name ? `${agent.name} (${agent.email})` : agent.email}
+                  </option>
+                ))}
               </select>
             </div>
 
