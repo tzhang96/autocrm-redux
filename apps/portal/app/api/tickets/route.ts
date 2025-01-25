@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/utils/supabase-server'
-import { CustomerAPI } from '@autocrm/api-client'
+import { CustomerAPI } from '@/lib/api/customer'
 import { NextResponse } from 'next/server'
 
 export async function GET() {

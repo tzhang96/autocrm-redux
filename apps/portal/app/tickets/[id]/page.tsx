@@ -1,4 +1,4 @@
-import { CustomerAPI } from '@autocrm/api-client'
+import { CustomerAPI } from '@/lib/api/customer'
 import { createServerSupabaseClient } from '@/utils/supabase-server'
 import { redirect, notFound } from 'next/navigation'
 import { Message, Ticket } from '@autocrm/core'

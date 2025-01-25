@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@autocrm/api-client": "workspace:*",
     "@autocrm/auth": "workspace:*",
     "@autocrm/core": "workspace:*",
     "@autocrm/ui": "workspace:*",

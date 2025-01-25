@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ['@autocrm/api-client', '@autocrm/core', '@autocrm/ui'],
+  transpilePackages: ['@autocrm/core', '@autocrm/ui'],
   reactStrictMode: true,
   experimental: {
     serverActions: {

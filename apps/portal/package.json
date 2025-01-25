@@ -9,13 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@autocrm/api-client": "workspace:*",
     "@autocrm/auth": "workspace:*",
     "@autocrm/core": "workspace:*",
     "@autocrm/ui": "workspace:*",
     "@supabase/auth-helpers-react": "^0.5.0",
-    "@supabase/ssr": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "2.48.0",
     "@tailwindcss/forms": "^0.5.7",
     "@tailwindcss/typography": "^0.5.10",
     "@tiptap/extension-link": "^2.1.13",

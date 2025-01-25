@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CustomerAPI } from '@autocrm/api-client'
+import { CustomerAPI } from '@/lib/api/customer'
 import { Message } from '@autocrm/core'
 
 interface TicketMessagesProps {

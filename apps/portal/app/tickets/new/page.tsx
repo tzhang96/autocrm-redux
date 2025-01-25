@@ -1,6 +1,6 @@
 'use client'
 
-import { CustomerAPI } from '@autocrm/api-client'
+import { CustomerAPI } from '@/lib/api/customer'
 import { NewTicketForm } from '@autocrm/ui'
 import { CreateTicketData } from '@autocrm/core'
 import { createSupabaseClient } from '@/utils/supabase'

@@ -11,7 +11,7 @@
     "lint": "eslint \"**/*.ts*\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.38.0",
+    "@supabase/supabase-js": "2.48.0",
     "@supabase/postgrest-js": "^1.0.0",
     "@types/node": "^20.0.0"
   },

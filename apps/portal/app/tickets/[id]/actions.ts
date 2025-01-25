@@ -1,6 +1,6 @@
 'use server'
 
-import { CustomerAPI } from '@autocrm/api-client'
+import { CustomerAPI } from '@/lib/api/customer'
 import { createServerSupabaseClient } from '@/utils/supabase-server'
 import { redirect } from 'next/navigation'
 import { Message } from '@autocrm/core'
