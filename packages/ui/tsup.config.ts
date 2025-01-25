@@ -3,18 +3,13 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['cjs', 'esm'],
-  dts: true,
-  splitting: true,
-  sourcemap: true,
-  clean: true,
+  dts: false,
+  clean: false,
+  splitting: false,
   external: ['react', 'next'],
-  esbuildOptions(options) {
-    options.tsconfig = './tsconfig.json'
+  esbuildOptions: (options) => {
     options.banner = {
-      js: '"use client";'
+      js: '"use client";',
     }
-  },
-  loader: {
-    '.tsx': 'tsx'
   }
 }) 
