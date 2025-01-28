@@ -11,7 +11,11 @@ interface DocViewerProps {
     title?: string;
     description?: string;
     lastUpdated?: string;
-    [key: string]: any;
+    version?: string;
+    category?: string;
+    tags?: string[];
+    relatedDocs?: string[];
+    [key: string]: string | string[] | undefined;
   };
   isLoading?: boolean;
   error?: string;

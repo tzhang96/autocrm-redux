@@ -87,7 +87,7 @@ export function DocSearch() {
 
       {query && !isLoading && results.length === 0 && (
         <div className="text-center p-4 text-gray-500">
-          No results found for "{query}"
+          No results found for &quot;{query}&quot;
         </div>
       )}
     </div>

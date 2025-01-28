@@ -9,7 +9,12 @@ interface DocResponse {
   metadata: {
     title: string;
     description?: string;
-    [key: string]: any;
+    lastUpdated?: string;
+    version?: string;
+    category?: string;
+    tags?: string[];
+    relatedDocs?: string[];
+    [key: string]: string | string[] | undefined;
   };
 }
 

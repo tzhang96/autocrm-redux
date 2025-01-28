@@ -11,7 +11,7 @@ interface FrontMatter {
   audience?: string;
   tags?: string[];
   relatedDocs?: string[];
-  [key: string]: any;
+  [key: string]: string | string[] | undefined;
 }
 
 // Helper function to extract front matter and clean content
@@ -36,7 +36,7 @@ function extractFrontMatter(content: string): { frontMatter: FrontMatter; conten
     if (colonIndex === -1) return;
     
     const key = trimmedLine.slice(0, colonIndex).trim();
-    let value = trimmedLine.slice(colonIndex + 1).trim();
+    const value = trimmedLine.slice(colonIndex + 1).trim();
     
     if (key) {
       // Handle arrays in YAML
@@ -51,13 +51,13 @@ function extractFrontMatter(content: string): { frontMatter: FrontMatter; conten
 
   // Clean up the main content by removing only the main title (h1)
   const lines = mainContent.split('\n');
-  let cleanedContent = mainContent;
+  const cleanedContent = mainContent;
 
   // Find the first h1 header and remove it
   const h1Index = lines.findIndex(line => line.trim().match(/^#\s+/));
   if (h1Index !== -1) {
     lines.splice(h1Index, 1);
-    cleanedContent = lines.join('\n').trim();
+    return { frontMatter, content: lines.join('\n').trim() };
   }
 
   console.log('Frontmatter:', frontMatter);
