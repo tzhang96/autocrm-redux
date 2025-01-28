@@ -215,7 +215,7 @@ async function processFile(filePath: string): Promise<void> {
   console.log(`\nProcessing ${filePath}...`);
   
   try {
-    // Read file
+  // Read file
     const content = await readFile(filePath, 'utf-8');
     console.log(`Read file successfully: ${filePath}`);
     
@@ -229,7 +229,7 @@ async function processFile(filePath: string): Promise<void> {
     
     // Create metadata
     const relativePath = filePath.replace(DOCS_DIR, '').replace(/^[\\/]/, '');
-    const metadata: DocumentMetadata = {
+  const metadata: DocumentMetadata = {
       title: frontMatter.title || relativePath.split(/[\\/]/).pop()?.replace(/\.(md|mdx)$/, '') || '',
       source_file: relativePath,
       category: frontMatter.category,
@@ -264,7 +264,7 @@ async function processDirectory(dir: string): Promise<void> {
       await processDirectory(path);
     } else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
       try {
-        await processFile(path);
+      await processFile(path);
         // Wait between files to allow for garbage collection
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
