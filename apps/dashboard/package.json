@@ -12,6 +12,7 @@
     "@autocrm/auth": "workspace:*",
     "@autocrm/core": "workspace:*",
     "@autocrm/ui": "workspace:*",
+    "@autocrm/docs": "workspace:*",
     "@radix-ui/react-dropdown-menu": "^2.1.5",
     "@radix-ui/react-select": "^2.1.5",
     "@radix-ui/react-slot": "^1.1.1",
