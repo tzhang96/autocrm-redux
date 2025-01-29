@@ -9,7 +9,7 @@ export function getMonorepoRoot() {
 
 // Get the docs content directory
 export function getDocsContentDir() {
-    return join(getMonorepoRoot(), 'packages', 'docs', 'src', 'content');
+    return join(getMonorepoRoot(), 'packages', 'docs', 'dist', 'content');
 }
 
 // Get the path to a specific doc file

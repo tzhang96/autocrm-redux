@@ -4,10 +4,15 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "src/content/**/*"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp -r src/content dist/content",
     "dev": "tsc -w",
     "lint": "eslint \"**/*.ts*\"",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
     "generate-embeddings": "node dist/scripts/generate-embeddings.js"
   },
   "dependencies": {
