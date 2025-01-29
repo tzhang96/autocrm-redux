@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { contentMap } from '@autocrm/docs/dist/content';
+import { contentMap, DocContent } from '@autocrm/docs/dist/content';
 
 export async function GET(
   request: Request,
   { params }: { params: { category: string; slug: string } }
 ) {
   try {
-    const path = `${params.category}/${params.slug}`;
-    const doc = contentMap[path];
+    const path = `${params.category}/${params.slug}` as keyof typeof contentMap;
+    const doc = contentMap[path] as DocContent | undefined;
 
     if (!doc) {
       return NextResponse.json(
