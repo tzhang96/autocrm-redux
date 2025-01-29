@@ -13,10 +13,22 @@ out/
 **/out/
 build/
 **/build/
+# Generated files
+*.js
+*.js.map
+!**/src/**/*.js
+!**/scripts/**/*.js
+!*.config.js
+!next.config.js
+!postcss.config.js
+!tailwind.config.js
 
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+*.d.ts
+*.d.ts.map
+!**/src/**/*.d.ts
 
 # Testing
 coverage/
