@@ -14,18 +14,6 @@
   },
   "dependencies": {
     "@supabase/postgrest-js": "^1.18.0",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "typescript": "5.0.4",
-    "@tailwindcss/typography": "^0.5.16",
-    "tailwindcss": "^3.3.0",
-    "eslint": "^8.57.1",
-    "eslint-config-prettier": "^10.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.21.0",
-    "@typescript-eslint/parser": "^8.21.0"
-  },
-  "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20.0.0",
     "@types/react": "^18.2.0",
@@ -34,6 +22,10 @@
     "@typescript-eslint/parser": "^8.21.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^10.0.1",
+    "tailwindcss": "^3.3.0",
+    "typescript": "5.0.4"
+  },
+  "devDependencies": {
     "prettier": "^3.0.0",
     "turbo": "^1.10.0"
   },
