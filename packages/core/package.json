@@ -8,16 +8,23 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "dev": "tsc -w",
-    "lint": "eslint \"**/*.ts*\""
+    "lint": "eslint \"**/*.ts*\"",
+    "test:ai-reply": "ts-node src/ai/test/testAIReply.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.48.0",
     "@supabase/postgrest-js": "^1.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "@langchain/core": "^0.1.27",
+    "@langchain/openai": "^0.0.14",
+    "langchain": "^0.0.214",
+    "zod": "^3.22.4",
+    "dotenv": "^16.4.1"
   },
   "devDependencies": {
     "typescript": "^5.0.4",
     "eslint": "^8.0.0",
-    "tsconfig": "*"
+    "tsconfig": "*",
+    "ts-node": "^10.9.2"
   }
 } 

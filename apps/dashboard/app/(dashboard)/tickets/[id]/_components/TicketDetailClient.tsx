@@ -55,6 +55,7 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
   const [messageContent, setMessageContent] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
+  const [isGeneratingAIReply, setIsGeneratingAIReply] = useState(false)
 
   useEffect(() => {
     const loadAgents = async () => {
@@ -218,6 +219,30 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
       toast.error('Failed to send message')
     }
   }
+
+  const handleAIReply = async () => {
+    if (isGeneratingAIReply) return;
+
+    try {
+      setIsGeneratingAIReply(true);
+      const response = await fetch(`/api/tickets/${ticket.ticket_id}/ai-reply`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate AI reply');
+      }
+
+      const { reply } = await response.json();
+      setMessageContent(reply);
+      toast.success('AI reply generated');
+    } catch (error) {
+      console.error('Failed to generate AI reply:', error);
+      toast.error('Failed to generate AI reply');
+    } finally {
+      setIsGeneratingAIReply(false);
+    }
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -385,8 +410,10 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
           <MessageEditor
             content={messageContent}
             onChange={setMessageContent}
-            onSubmit={(visibility) => handleSendMessage(visibility)}
+            onSubmit={handleSendMessage}
+            onAIReply={handleAIReply}
             disabled={isLoading}
+            isGeneratingAIReply={isGeneratingAIReply}
           />
           {error && (
             <div className="mt-2 text-sm text-red-600" role="alert">

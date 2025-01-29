@@ -23,13 +23,16 @@ import {
   Redo,
   Eye,
   EyeOff,
+  Sparkles,
 } from 'lucide-react'
 
 interface MessageEditorProps {
   content: string
   onChange: (content: string) => void
   onSubmit: (visibility: 'public' | 'internal') => void
+  onAIReply?: () => Promise<void>
   disabled?: boolean
+  isGeneratingAIReply?: boolean
   placeholder?: string
 }
 
@@ -66,8 +69,10 @@ const MenuButton = ({
 export function MessageEditor({ 
   content, 
   onChange, 
-  onSubmit, 
+  onSubmit,
+  onAIReply,
   disabled = false,
+  isGeneratingAIReply = false,
   placeholder = "Write your message here..." 
 }: MessageEditorProps) {
   const [isInternal, setIsInternal] = React.useState(false)
@@ -243,6 +248,21 @@ export function MessageEditor({
           >
             <LinkIcon className="h-4 w-4" />
           </MenuButton>
+
+          {onAIReply && (
+            <div className="flex items-center gap-0.5 pl-2 border-l ml-2">
+              <Button
+                onClick={onAIReply}
+                disabled={disabled || isGeneratingAIReply}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                {isGeneratingAIReply ? 'Generating...' : 'AI Reply'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

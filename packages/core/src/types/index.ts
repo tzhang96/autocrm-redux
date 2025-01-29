@@ -152,4 +152,7 @@ export interface CreateMessageData {
 export interface UpdateMessageData {
   content?: string
   metadata?: Metadata
-} 
+}
+
+// Export AI types
+export * from './ai' 
