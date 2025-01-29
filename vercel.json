@@ -6,8 +6,8 @@
       "development": true
     }
   },
-  "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "pnpm turbo run build",
+  "installCommand": "pnpm install",
+  "buildCommand": "cd packages/docs && pnpm install && pnpm build && cd ../.. && pnpm build",
   "framework": "nextjs",
   "outputDirectory": ".next",
   "env": {
