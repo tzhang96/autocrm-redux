@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@autocrm/auth'
 import { cookies } from 'next/headers'
-import { Message, AIReplyResponse, MessageHistoryEntry, TicketContext } from '@autocrm/core'
-import { HelpDocsTool } from '@autocrm/core/ai/tools'
-import { AIReplyChain } from '@autocrm/core/ai/chains'
+import { 
+  Message, 
+  AIReplyResponse, 
+  MessageHistoryEntry, 
+  TicketContext,
+  HelpDocsTool,
+  AIReplyChain
+} from '@autocrm/core'
 
 const helpDocsTool = new HelpDocsTool(
   process.env.OPENAI_API_KEY!,

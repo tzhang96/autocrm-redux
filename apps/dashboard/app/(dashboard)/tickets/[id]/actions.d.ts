@@ -1,33 +1,17 @@
-declare module '@/app/(dashboard)/tickets/[id]/actions' {
-  import { Message, TicketStatus, TicketPriority } from '@autocrm/core'
-
-  interface Agent {
-    user_id: string
-    name: string
-    email: string
-    role: 'agent' | 'admin'
-  }
-
-  export function sendMessage(
-    ticket_id: string, 
-    content: string,
-    visibility?: 'public' | 'internal'
-  ): Promise<Message[]>
-
-  export function updateTicketStatus(
-    ticket_id: string,
-    status: TicketStatus
-  ): Promise<void>
-
-  export function updateTicketPriority(
-    ticket_id: string,
-    priority: TicketPriority
-  ): Promise<void>
-
-  export function assignTicket(
-    ticket_id: string,
-    agent_id: string | null
-  ): Promise<void>
-
-  export function getAvailableAgents(): Promise<Agent[]>
-} 
+import type { TicketActions } from './types';
+import { Database } from '@autocrm/core';
+type Ticket = Database['public']['Tables']['tickets']['Row'];
+export declare const sendMessage: TicketActions['sendMessage'];
+export declare const updateTicketStatus: TicketActions['updateTicketStatus'];
+export declare const updateTicketPriority: TicketActions['updateTicketPriority'];
+export declare const assignTicket: TicketActions['assignTicket'];
+export declare const getAvailableAgents: TicketActions['getAvailableAgents'];
+export declare function getTicket(ticketId: string): Promise<any>;
+export declare function updateTicket(ticketId: string, updates: Partial<Ticket>): Promise<{
+    success: boolean;
+}>;
+export declare function addMessage(ticketId: string, content: string): Promise<{
+    success: boolean;
+}>;
+export {};
+//# sourceMappingURL=actions.d.ts.map

@@ -1,1 +1,1 @@
-export * from './AIReplyChain' 
+export { AIReplyChain } from './AIReplyChain' 

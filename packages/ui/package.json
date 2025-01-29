@@ -2,12 +2,19 @@
   "name": "@autocrm/ui",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsup",
-    "dev": "tsup --watch",
+    "build": "tsc -p tsconfig.build.json && tsup src/index.ts --format esm",
+    "dev": "tsup src/index.ts --format esm --watch",
     "clean": "rimraf dist"
   },
   "dependencies": {

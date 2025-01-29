@@ -2,14 +2,22 @@
   "name": "@autocrm/core",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
     "dev": "tsc -w",
     "lint": "eslint \"**/*.ts*\"",
-    "test:ai-reply": "ts-node src/ai/test/testAIReply.ts"
+    "test:ai-reply": "node --loader ts-node/esm src/ai/test/testAIReply.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.48.0",

@@ -1,1 +1,1 @@
-export * from './HelpDocsTool' 
+export { HelpDocsTool } from './HelpDocsTool' 

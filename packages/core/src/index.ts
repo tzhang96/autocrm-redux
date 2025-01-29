@@ -6,4 +6,7 @@ export * from './database/tickets'
 export * from './database/messages'
 export * from './database/users'
 export * from './database/errors'
-export * from './database/utils' 
+export * from './database/utils'
+
+// Re-export AI module
+export * from './ai' 
