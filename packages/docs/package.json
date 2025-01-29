@@ -5,11 +5,11 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist/**/*",
-    "src/content/**/*"
+    "dist/**/*"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/content dist/content",
+    "prebuild": "ts-node scripts/build-content.ts",
+    "build": "tsc",
     "dev": "tsc -w",
     "lint": "eslint \"**/*.ts*\"",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
@@ -26,6 +26,7 @@
     "@types/marked": "^5.0.2",
     "@types/node": "^20.0.0",
     "eslint": "^8.0.0",
+    "ts-node": "^10.9.2",
     "tsconfig": "*",
     "typescript": "^5.0.4"
   }
