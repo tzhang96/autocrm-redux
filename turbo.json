@@ -5,20 +5,34 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
-      "env": [
-        "NEXT_PUBLIC_SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-        "SUPABASE_SERVICE_ROLE_KEY",
-        "NODE_ENV"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
-    "lint": {
-      "outputs": []
+    "@autocrm/docs#build": {
+      "dependsOn": [],
+      "outputs": ["dist/**"]
+    },
+    "@autocrm/core#build": {
+      "dependsOn": ["@autocrm/docs#build"],
+      "outputs": ["dist/**"]
+    },
+    "@autocrm/ui#build": {
+      "dependsOn": ["@autocrm/core#build"],
+      "outputs": ["dist/**"]
+    },
+    "@autocrm/portal#build": {
+      "dependsOn": ["@autocrm/ui#build", "@autocrm/core#build"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "@autocrm/dashboard#build": {
+      "dependsOn": ["@autocrm/ui#build", "@autocrm/core#build", "@autocrm/docs#build"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "lint": {
+      "outputs": []
     },
     "clean": {
       "cache": false
