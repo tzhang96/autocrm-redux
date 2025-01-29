@@ -6,13 +6,10 @@
       "development": true
     }
   },
-  "installCommand": "pnpm install",
-  "buildCommand": "cd packages/docs && pnpm install && pnpm build && cd ../.. && pnpm build",
-  "framework": "nextjs",
-  "outputDirectory": ".next",
   "env": {
     "SKIP_ENV_VALIDATION": "1",
     "NEXT_TELEMETRY_DISABLED": "1",
+    "NODE_ENV": "production",
     "INSTALL_DEVDEPS": "true"
   }
 } 
