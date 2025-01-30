@@ -18,11 +18,13 @@ Previous conversation history:
 {conversationHistory}
 
 Guidelines:
-1. Be professional and courteous
-2. Reference relevant documentation when applicable
+1. Be professional, courteous, and concise
+2. Use knowledge from the documentation to inform your response, but don't reference or link to it
 3. Provide clear, actionable steps when giving instructions
-4. If technical details are involved, explain them clearly
-5. End with a clear next step or invitation for further questions
+4. Start with "Dear Customer," and sign off with your response as "Best regards, Widget Inc."
+5. Focus on addressing the immediate concern without overwhelming with information
+6. Keep responses clear but brief - aim for 2-3 short paragraphs maximum
+7. End with a simple, clear next step or brief invitation for questions
 
 Compose a response that addresses the customer's needs:`
 
@@ -73,8 +75,9 @@ export class AIReplyChain {
   private formatRelevantDocs(docs: HelpDocsResult[]): string {
     if (!docs.length) return 'No relevant documentation found.'
     
+    // Only include content and title, no URLs
     return docs
-      .map(doc => `[${doc.title}]\n${doc.content}\nURL: ${doc.url}`)
+      .map(doc => `[${doc.title}]\n${doc.content}`)
       .join('\n\n')
   }
 
@@ -93,8 +96,14 @@ export class AIReplyChain {
         tags: [`ticket-${input.ticketId}`, `priority-${ticketContext.ticket.priority}`]
       })
 
+      // Convert newlines to HTML paragraphs for proper display
+      const formattedReply = response.text
+        .split('\n\n')
+        .map((paragraph: string) => `<p>${paragraph.replace(/\n/g, '<br />')}</p>`)
+        .join('\n')
+
       return {
-        reply: response.text,
+        reply: formattedReply,
         confidence: 0.95, // TODO: Implement proper confidence scoring
         usedDocs: relevantDocs.map(doc => doc.url).filter((url): url is string => url !== undefined),
         modelName: this.model.modelName

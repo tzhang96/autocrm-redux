@@ -96,6 +96,11 @@ export function MessageEditor({
           levels: [1, 2],
         },
         codeBlock: false,
+        paragraph: {
+          HTMLAttributes: {
+            class: 'mb-4'
+          }
+        }
       }),
       Link.configure({
         openOnClick: false,
@@ -123,6 +128,9 @@ export function MessageEditor({
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML())
+    },
+    parseOptions: {
+      preserveWhitespace: 'full'
     },
   })
 
