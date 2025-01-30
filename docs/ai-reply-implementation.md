@@ -38,7 +38,7 @@ The AI Reply feature helps agents respond to tickets by generating professional 
 - [x] Create basic chain structure
 - [x] Implement initial prompt templates
 - [x] Add environment variables
-- [ ] Test basic completion
+- [x] Test basic completion
 
 ### 5. Full Chain Implementation
 - [ ] Integrate all tools into chain

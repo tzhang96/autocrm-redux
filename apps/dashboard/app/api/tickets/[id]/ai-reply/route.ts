@@ -10,6 +10,7 @@ import {
   AIReplyChain
 } from '@autocrm/core'
 
+// Initialize tools with environment variables
 const helpDocsTool = new HelpDocsTool(
   process.env.OPENAI_API_KEY!,
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,6 +27,8 @@ export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ): Promise<NextResponse<AIReplyResponse>> {
+  console.log('AI Reply request received for ticket:', params.id)
+  
   try {
     const cookieStore = cookies()
     const supabase = await createServerClient(cookieStore)
@@ -33,20 +36,23 @@ export async function POST(
     // Check authentication
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
+      console.error('Unauthorized request')
       return new NextResponse('Unauthorized', { status: 401 })
     }
 
     const ticketId = params.id
     if (!ticketId) {
+      console.error('Missing ticket ID')
       return new NextResponse('Ticket ID is required', { status: 400 })
     }
 
+    console.log('Fetching ticket details...')
     // 1. Get ticket details
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select(`
         *,
-        messages:ticket_messages(
+        messages!messages_ticket_id_fkey(
           *,
           user:users(*)
         )
@@ -55,9 +61,11 @@ export async function POST(
       .single()
 
     if (ticketError || !ticket) {
+      console.error('Ticket not found:', ticketError)
       return new NextResponse('Ticket not found', { status: 404 })
     }
 
+    console.log('Formatting conversation history...')
     // 2. Format conversation history
     const conversationHistory: MessageHistoryEntry[] = ticket.messages.map((msg: Message & { user?: { role?: string } }) => ({
       role: msg.user?.role === 'customer' ? 'customer' : 'agent',
@@ -68,6 +76,7 @@ export async function POST(
       metadata: msg.metadata
     }))
 
+    console.log('Searching relevant documentation...')
     // 3. Search for relevant documentation
     const latestMessage = conversationHistory[conversationHistory.length - 1]?.content
     const helpDocsResponse = await helpDocsTool.searchRelevantDocs(
@@ -77,6 +86,7 @@ export async function POST(
       { limit: 3, threshold: 0.7 }
     )
 
+    console.log('Generating AI reply...')
     // 4. Generate AI reply using the chain
     const ticketContext: TicketContext = {
       ticket,
@@ -93,6 +103,7 @@ export async function POST(
       relevantDocs: helpDocsResponse.documents
     })
 
+    console.log('AI reply generated successfully')
     return NextResponse.json({
       reply: chainResponse.reply,
       metadata: {
