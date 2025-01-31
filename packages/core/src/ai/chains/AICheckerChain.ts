@@ -36,19 +36,24 @@ export interface AICheckerInput {
 export class AICheckerChain {
   private chain: RunnableSequence
   private model: ChatOpenAI
+  private readonly timeout: number = 25000 // 25 second timeout
+  private readonly projectName: string
 
   constructor(
     apiKey: string,
     modelName: string = 'gpt-4-turbo-preview',
     temperature: number = 0.3
   ) {
+    this.projectName = process.env.LANGSMITH_PROJECT_CHECKER || 'autocrm-message-validation'
+    
     this.model = new ChatOpenAI({
       openAIApiKey: apiKey,
       modelName,
       temperature,
       configuration: {
         baseURL: process.env.OPENAI_API_BASE_URL,
-      }
+      },
+      timeout: this.timeout
     })
 
     const prompt = PromptTemplate.fromTemplate(`
@@ -78,11 +83,9 @@ export class AICheckerChain {
       new StringOutputParser(),
       (output: string) => {
         try {
-          // Clean up any potential markdown formatting
           const cleanJson = output.replace(/```json\n?|\n?```/g, '').trim()
           const result = JSON.parse(cleanJson)
           
-          // Validate the expected structure
           if (typeof result.isValid !== 'boolean' || typeof result.message !== 'string') {
             throw new Error('Invalid response format')
           }
@@ -100,16 +103,27 @@ export class AICheckerChain {
   }
 
   async check(input: AICheckerInput, runName?: string) {
-    try {
-      const config: BaseCallbackConfig = {
-        tags: ['ai-checker'],
-        metadata: { 
-          project: process.env.LANGCHAIN_PROJECT || 'autocrm-message-validation',
-          runName: runName || 'message-check'
-        }
+    const runId = `check-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    
+    const config: BaseCallbackConfig = {
+      runName: runId,
+      tags: ['ai-checker'],
+      metadata: { 
+        project: this.projectName,
+        timestamp: new Date().toISOString()
       }
+    }
 
-      const result = await this.chain.invoke(input, config)
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Operation timed out')), this.timeout)
+      })
+
+      const result = await Promise.race([
+        this.chain.invoke(input, config),
+        timeoutPromise
+      ])
+      
       return result
     } catch (error) {
       console.error('Error in AI checker chain:', error)

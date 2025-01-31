@@ -34,12 +34,15 @@ export class AIReplyChain {
   private chain: RunnableSequence
   private model: ChatOpenAI
   private readonly timeout: number = 25000 // 25 second timeout
+  private readonly projectName: string
 
   constructor(
     apiKey: string,
     modelName: string = 'gpt-4-turbo-preview',
     temperature: number = 0.7
   ) {
+    this.projectName = process.env.LANGSMITH_PROJECT || 'autocrm-ticket-replies'
+    
     this.model = new ChatOpenAI({
       openAIApiKey: apiKey,
       modelName,
@@ -101,13 +104,13 @@ export class AIReplyChain {
   }
 
   async generateReply(input: AIReplyChainInput): Promise<AIReplyChainOutput> {
-    const runId = `reply-${input.ticketId}-${Date.now()}`
+    const runId = `reply-${input.ticketId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     
     const config: BaseCallbackConfig = {
       runName: runId,
       tags: ['ai-reply'],
       metadata: { 
-        project: process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies',
+        project: this.projectName,
         ticketId: input.ticketId,
         timestamp: new Date().toISOString()
       }
