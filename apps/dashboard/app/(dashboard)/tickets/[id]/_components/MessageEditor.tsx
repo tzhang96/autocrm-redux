@@ -9,6 +9,12 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import {
   Bold,
   Italic,
   Code,
@@ -24,6 +30,8 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 
 interface MessageEditorProps {
@@ -31,9 +39,14 @@ interface MessageEditorProps {
   onChange: (content: string) => void
   onSubmit: (visibility: 'public' | 'internal') => void
   onAIReply?: () => Promise<void>
+  onAICheck?: () => Promise<{ isValid: boolean; message: string }>
   disabled?: boolean
   isGeneratingAIReply?: boolean
+  isCheckingMessage?: boolean
   placeholder?: string
+  ticketContext?: string
+  messageHistory?: string
+  documentationContext?: string
 }
 
 const MenuButton = ({ 
@@ -71,11 +84,19 @@ export function MessageEditor({
   onChange, 
   onSubmit,
   onAIReply,
+  onAICheck,
   disabled = false,
   isGeneratingAIReply = false,
-  placeholder = "Write your message here..." 
+  isCheckingMessage = false,
+  placeholder = "Write your message here...",
+  ticketContext,
+  messageHistory,
+  documentationContext
 }: MessageEditorProps) {
   const [isInternal, setIsInternal] = React.useState(false)
+  const [checkerFeedback, setCheckerFeedback] = React.useState<{ isValid: boolean; message: string } | null>(null)
+  const [tooltipOpen, setTooltipOpen] = React.useState(false)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -140,6 +161,17 @@ export function MessageEditor({
       editor.commands.setContent(content)
     }
   }, [content, editor])
+
+  const handleAICheck = async () => {
+    if (!onAICheck) return
+    try {
+      const feedback = await onAICheck()
+      setCheckerFeedback(feedback)
+      setTooltipOpen(true)
+    } catch (error) {
+      console.error('Error checking message:', error)
+    }
+  }
 
   if (!editor) {
     return null
@@ -231,7 +263,7 @@ export function MessageEditor({
             </MenuButton>
           </div>
 
-          <div className="flex items-center gap-0.5 pr-2 border-r mr-2">
+          <div className="flex items-center gap-0.5">
             <MenuButton
               onClick={() => editor.chain().focus().toggleCodeBlock().run()}
               disabled={disabled}
@@ -248,75 +280,117 @@ export function MessageEditor({
             >
               <Quote className="h-4 w-4" />
             </MenuButton>
+            <MenuButton
+              onClick={() => {
+                const url = window.prompt('Enter URL')
+                if (url) {
+                  editor.chain().focus().setLink({ href: url }).run()
+                }
+              }}
+              disabled={disabled}
+              isActive={editor.isActive('link')}
+              tooltip="Add Link"
+            >
+              <LinkIcon className="h-4 w-4" />
+            </MenuButton>
           </div>
-
-          <MenuButton
-            onClick={() => {
-              const url = window.prompt('Enter URL')
-              if (url) {
-                editor.chain().focus().setLink({ href: url }).run()
-              }
-            }}
-            disabled={disabled}
-            isActive={editor.isActive('link')}
-            tooltip="Add Link"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </MenuButton>
-
-          {onAIReply && (
-            <div className="flex items-center gap-0.5 pl-2 border-l ml-2">
-              <Button
-                onClick={onAIReply}
-                disabled={disabled || isGeneratingAIReply}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <Sparkles className="h-4 w-4" />
-                {isGeneratingAIReply ? 'Generating...' : 'AI Reply'}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
       <EditorContent editor={editor} />
 
-      <div className="flex justify-between items-center p-2 border-t bg-muted/50">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">
-            Use Markdown shortcuts (e.g., ** for bold, * for italic)
-          </p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsInternal(!isInternal)}
-            className={cn(
-              "gap-2",
-              isInternal && "bg-yellow-100 hover:bg-yellow-200 text-yellow-900"
+      <div className="border-t bg-muted/50 p-2 mt-auto">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            {onAICheck && (
+              <TooltipProvider>
+                <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleAICheck}
+                      disabled={disabled || isCheckingMessage || !editor?.getText()?.trim()}
+                      className="gap-2"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      {isCheckingMessage ? 'Checking...' : 'AI Checker'}
+                    </Button>
+                  </TooltipTrigger>
+                  {checkerFeedback && (
+                    <TooltipContent 
+                      side="top" 
+                      align="end"
+                      className={cn(
+                        "max-w-sm p-4 space-y-2",
+                        checkerFeedback.isValid ? "bg-green-50 text-green-900" : "bg-red-50 text-red-900"
+                      )}
+                    >
+                      <div className="flex items-start gap-2">
+                        {checkerFeedback.isValid ? (
+                          <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                        ) : (
+                          <XCircle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                        )}
+                        <div className="flex-1">
+                          <p className="font-medium">
+                            {checkerFeedback.isValid ? "Message Looks Good!" : "Message Needs Review"}
+                          </p>
+                          <p className="text-sm mt-1 whitespace-pre-wrap">
+                            {checkerFeedback.message}
+                          </p>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
-          >
-            {isInternal ? (
-              <>
-                <EyeOff className="h-4 w-4" />
-                Internal Note
-              </>
-            ) : (
-              <>
-                <Eye className="h-4 w-4" />
-                Public Message
-              </>
+            {onAIReply && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onAIReply}
+                disabled={disabled || isGeneratingAIReply}
+                className="gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                {isGeneratingAIReply ? 'Generating...' : 'AI Reply'}
+              </Button>
             )}
-          </Button>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsInternal(!isInternal)}
+              className="gap-2"
+            >
+              {isInternal ? (
+                <>
+                  <EyeOff className="h-4 w-4" />
+                  Internal
+                </>
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  Public
+                </>
+              )}
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={disabled || !editor?.getText()?.trim()}
+              onClick={() => onSubmit(isInternal ? 'internal' : 'public')}
+            >
+              Send
+            </Button>
+          </div>
         </div>
-        <Button
-          onClick={() => onSubmit(isInternal ? 'internal' : 'public')}
-          disabled={disabled || !editor.getText().trim()}
-          size="sm"
-        >
-          Send Message
-        </Button>
       </div>
     </div>
   )

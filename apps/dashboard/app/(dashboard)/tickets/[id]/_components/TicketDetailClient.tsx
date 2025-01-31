@@ -56,6 +56,7 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
   const [error, setError] = useState<string | null>(null)
   const [availableAgents, setAvailableAgents] = useState<Agent[]>([])
   const [isGeneratingAIReply, setIsGeneratingAIReply] = useState(false)
+  const [isCheckingMessage, setIsCheckingMessage] = useState(false)
 
   useEffect(() => {
     const loadAgents = async () => {
@@ -209,14 +210,20 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
     }
   }
 
-  const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleMessageSubmit = async (visibility: 'public' | 'internal') => {
     try {
-      await ticketActions.addMessage(ticket.ticket_id, messageContent)
+      setIsLoading(true)
+      setError(null)
+      const updatedMessages = await ticketActions.sendMessage(ticket.ticket_id, messageContent, visibility)
+      setMessages(updatedMessages)
       setMessageContent('')
       toast.success('Message sent successfully')
     } catch (error) {
+      console.error('Failed to send message:', error)
       toast.error('Failed to send message')
+      setError('Failed to send message. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -241,6 +248,37 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
       toast.error('Failed to generate AI reply');
     } finally {
       setIsGeneratingAIReply(false);
+    }
+  };
+
+  const handleAICheck = async () => {
+    if (isCheckingMessage) return;
+
+    try {
+      setIsCheckingMessage(true);
+      const response = await fetch(`/api/tickets/${ticket.ticket_id}/ai-check`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: messageContent }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check message');
+      }
+
+      const feedback = await response.json();
+      return feedback;
+    } catch (error) {
+      console.error('Failed to check message:', error);
+      toast.error('Failed to check message');
+      return {
+        isValid: false,
+        message: 'Failed to check message. Please try again.',
+      };
+    } finally {
+      setIsCheckingMessage(false);
     }
   };
 
@@ -410,10 +448,25 @@ export function TicketDetailClient({ ticket: initialTicket, initialMessages }: T
           <MessageEditor
             content={messageContent}
             onChange={setMessageContent}
-            onSubmit={handleSendMessage}
+            onSubmit={handleMessageSubmit}
             onAIReply={handleAIReply}
+            onAICheck={handleAICheck}
             disabled={isLoading}
             isGeneratingAIReply={isGeneratingAIReply}
+            isCheckingMessage={isCheckingMessage}
+            ticketContext={`
+Ticket Title: ${ticket.title}
+Description: ${ticket.description}
+Status: ${ticket.status}
+Priority: ${ticket.priority}
+Customer: ${ticket.customer_email}
+            `.trim()}
+            messageHistory={messages
+              .map(msg => {
+                const role = msg.user?.role === 'customer' ? 'Customer' : 'Agent'
+                return `${role}: ${msg.content}`
+              })
+              .join('\n\n')}
           />
           {error && (
             <div className="mt-2 text-sm text-red-600" role="alert">

@@ -1,6 +1,7 @@
 import { ChatOpenAI } from '@langchain/openai'
-import { PromptTemplate } from 'langchain/prompts'
-import { LLMChain } from 'langchain/chains'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { RunnableSequence } from '@langchain/core/runnables'
+import { StringOutputParser } from '@langchain/core/output_parsers'
 import { AIReplyChainInput, AIReplyChainOutput, MessageHistoryEntry, HelpDocsResult } from '../../types/ai'
 
 const SYSTEM_TEMPLATE = `You are a helpful customer support agent. Your goal is to provide accurate, professional, and empathetic responses to customer inquiries.
@@ -29,7 +30,7 @@ Guidelines:
 Compose a response that addresses the customer's needs:`
 
 export class AIReplyChain {
-  private chain: LLMChain
+  private chain: RunnableSequence
   private model: ChatOpenAI
 
   constructor(
@@ -46,24 +47,21 @@ export class AIReplyChain {
       }
     })
 
-    const prompt = new PromptTemplate({
-      template: SYSTEM_TEMPLATE,
-      inputVariables: [
-        'ticketTitle',
-        'ticketDescription',
-        'ticketStatus',
-        'ticketPriority',
-        'relevantDocs',
-        'conversationHistory'
-      ]
-    })
+    const prompt = PromptTemplate.fromTemplate(SYSTEM_TEMPLATE)
 
-    this.chain = new LLMChain({
-      llm: this.model,
+    this.chain = RunnableSequence.from([
+      {
+        ticketTitle: (input: AIReplyChainInput) => input.ticketContext.ticket.title,
+        ticketDescription: (input: AIReplyChainInput) => input.ticketContext.ticket.description,
+        ticketStatus: (input: AIReplyChainInput) => input.ticketContext.ticket.status,
+        ticketPriority: (input: AIReplyChainInput) => input.ticketContext.ticket.priority,
+        relevantDocs: (input: AIReplyChainInput) => this.formatRelevantDocs(input.relevantDocs || []),
+        conversationHistory: (input: AIReplyChainInput) => this.formatConversationHistory(input.messageHistory)
+      },
       prompt,
-      verbose: true,
-      tags: ['ai-reply', process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies']
-    })
+      this.model,
+      new StringOutputParser()
+    ])
   }
 
   private formatConversationHistory(messages: MessageHistoryEntry[]): string {
@@ -83,21 +81,10 @@ export class AIReplyChain {
 
   async generateReply(input: AIReplyChainInput): Promise<AIReplyChainOutput> {
     try {
-      const { ticketContext, messageHistory, relevantDocs = [] } = input
-
-      const response = await this.chain.call({
-        ticketTitle: ticketContext.ticket.title,
-        ticketDescription: ticketContext.ticket.description,
-        ticketStatus: ticketContext.ticket.status,
-        ticketPriority: ticketContext.ticket.priority,
-        relevantDocs: this.formatRelevantDocs(relevantDocs),
-        conversationHistory: this.formatConversationHistory(messageHistory)
-      }, {
-        tags: [`ticket-${input.ticketId}`, `priority-${ticketContext.ticket.priority}`]
-      })
+      const response = await this.chain.invoke(input)
 
       // Convert newlines to HTML paragraphs for proper display
-      const formattedReply = response.text
+      const formattedReply = response
         .split('\n\n')
         .map((paragraph: string) => `<p>${paragraph.replace(/\n/g, '<br />')}</p>`)
         .join('\n')
@@ -105,7 +92,7 @@ export class AIReplyChain {
       return {
         reply: formattedReply,
         confidence: 0.95, // TODO: Implement proper confidence scoring
-        usedDocs: relevantDocs.map(doc => doc.url).filter((url): url is string => url !== undefined),
+        usedDocs: (input.relevantDocs || []).map(doc => doc.url).filter((url): url is string => url !== undefined),
         modelName: this.model.modelName
       }
     } catch (error) {
