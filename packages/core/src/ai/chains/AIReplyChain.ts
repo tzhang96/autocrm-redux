@@ -81,7 +81,14 @@ export class AIReplyChain {
 
   async generateReply(input: AIReplyChainInput): Promise<AIReplyChainOutput> {
     try {
-      const response = await this.chain.invoke(input)
+      const response = await this.chain.invoke(input, {
+        tags: ['ai-reply'],
+        metadata: { 
+          project: process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies',
+          runName: `reply-${input.ticketId}`,
+          ticketId: input.ticketId
+        }
+      })
 
       // Convert newlines to HTML paragraphs for proper display
       const formattedReply = response

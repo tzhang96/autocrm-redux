@@ -2,6 +2,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { BaseCallbackConfig } from '@langchain/core/callbacks/manager'
 
 const SYSTEM_TEMPLATE = `You are an expert customer service message validator. Your role is to analyze support messages for quality, tone, professionalism, and most importantly, accuracy and consistency with the ticket context and documentation.
 
@@ -98,17 +99,17 @@ export class AICheckerChain {
     ])
   }
 
-  async check(input: AICheckerInput) {
+  async check(input: AICheckerInput, runName?: string) {
     try {
-      const result = await this.chain.invoke(
-        input,
-        {
-          configurable: {
-            tags: ['ai-checker'],
-            metadata: { project: process.env.LANGCHAIN_PROJECT_CHECKER || 'autocrm-message-validation' }
-          }
+      const config: BaseCallbackConfig = {
+        tags: ['ai-checker'],
+        metadata: { 
+          project: process.env.LANGCHAIN_PROJECT || 'autocrm-message-validation',
+          runName: runName || 'message-check'
         }
-      )
+      }
+
+      const result = await this.chain.invoke(input, config)
       return result
     } catch (error) {
       console.error('Error in AI checker chain:', error)
