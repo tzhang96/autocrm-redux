@@ -101,12 +101,15 @@ export class AIReplyChain {
   }
 
   async generateReply(input: AIReplyChainInput): Promise<AIReplyChainOutput> {
+    const runId = `reply-${input.ticketId}-${Date.now()}`
+    
     const config: BaseCallbackConfig = {
+      runName: runId,
       tags: ['ai-reply'],
       metadata: { 
         project: process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies',
-        runName: `reply-${input.ticketId}`,
-        ticketId: input.ticketId
+        ticketId: input.ticketId,
+        timestamp: new Date().toISOString()
       }
     }
 
