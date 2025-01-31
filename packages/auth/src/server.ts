@@ -1,10 +1,11 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@autocrm/core'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 type CookieStore = ReturnType<typeof cookies>
 
-export const createClient = async (cookieStore: CookieStore = cookies()) => {
+export const createClient = async (cookieStore: CookieStore = cookies()): Promise<SupabaseClient<Database>> => {
   const cookieJar = await cookieStore
   let response = new Response()
 

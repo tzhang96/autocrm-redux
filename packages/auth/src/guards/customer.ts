@@ -1,23 +1,17 @@
-import { createClient } from '../server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createClient } from '../server'
 import { UserRole } from '../types'
+import { User } from '@supabase/supabase-js'
 
-export async function withCustomerGuard(redirectPath = '/login') {
-  const cookieStore = cookies()
-  const supabase = await createClient(cookieStore)
+export async function withCustomerGuard(redirectPath: string = '/login'): Promise<{ user: User }> {
+  const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
   
-  if (!user) {
+  if (!user || user.user_metadata.role !== UserRole.CUSTOMER) {
     redirect(redirectPath)
   }
 
-  const role = user.user_metadata?.role as UserRole
-
-  if (role !== UserRole.CUSTOMER) {
-    redirect('/unauthorized')
-  }
-
-  return { user, role }
+  return { user }
 } 
