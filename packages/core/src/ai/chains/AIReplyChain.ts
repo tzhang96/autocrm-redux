@@ -41,6 +41,10 @@ export class AIReplyChain {
     modelName: string = 'gpt-4-turbo-preview',
     temperature: number = 0.7
   ) {
+    // Ensure we're using LANGSMITH_PROJECT consistently
+    if (!process.env.LANGSMITH_PROJECT) {
+      console.warn('LANGSMITH_PROJECT environment variable is not set, using default project name')
+    }
     this.projectName = process.env.LANGSMITH_PROJECT || 'autocrm-ticket-replies'
     
     this.model = new ChatOpenAI({

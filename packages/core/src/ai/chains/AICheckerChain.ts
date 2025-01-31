@@ -44,7 +44,9 @@ export class AICheckerChain {
     modelName: string = 'gpt-4-turbo-preview',
     temperature: number = 0.3
   ) {
-    this.projectName = process.env.LANGSMITH_PROJECT_CHECKER || 'autocrm-message-validation'
+    // First try LANGSMITH_PROJECT_CHECKER, then fall back to LANGSMITH_PROJECT with a suffix
+    this.projectName = process.env.LANGSMITH_PROJECT_CHECKER || 
+      (process.env.LANGSMITH_PROJECT ? `${process.env.LANGSMITH_PROJECT}-checker` : 'autocrm-message-validation')
     
     this.model = new ChatOpenAI({
       openAIApiKey: apiKey,
