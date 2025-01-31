@@ -2,6 +2,7 @@ import { ChatOpenAI } from '@langchain/openai'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { BaseCallbackConfig } from '@langchain/core/callbacks/manager'
 import { AIReplyChainInput, AIReplyChainOutput, MessageHistoryEntry, HelpDocsResult } from '../../types/ai'
 
 const SYSTEM_TEMPLATE = `You are a helpful customer support agent. Your goal is to provide accurate, professional, and empathetic responses to customer inquiries.
@@ -32,6 +33,7 @@ Compose a response that addresses the customer's needs:`
 export class AIReplyChain {
   private chain: RunnableSequence
   private model: ChatOpenAI
+  private readonly timeout: number = 25000 // 25 second timeout
 
   constructor(
     apiKey: string,
@@ -44,7 +46,8 @@ export class AIReplyChain {
       temperature,
       configuration: {
         baseURL: process.env.OPENAI_API_BASE_URL,
-      }
+      },
+      timeout: this.timeout
     })
 
     const prompt = PromptTemplate.fromTemplate(SYSTEM_TEMPLATE)
@@ -60,7 +63,25 @@ export class AIReplyChain {
       },
       prompt,
       this.model,
-      new StringOutputParser()
+      new StringOutputParser(),
+      (text: string) => {
+        try {
+          // Format the response into HTML paragraphs
+          const formattedHtml = text
+            .split('\n\n')
+            .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br />')}</p>`)
+            .join('\n')
+
+          if (!formattedHtml.trim()) {
+            throw new Error('Empty response received from model')
+          }
+
+          return formattedHtml
+        } catch (error) {
+          console.error('Error formatting AI reply:', error)
+          return '<p>I apologize, but I was unable to generate a response at this time. Please try again.</p>'
+        }
+      }
     ])
   }
 
@@ -80,31 +101,40 @@ export class AIReplyChain {
   }
 
   async generateReply(input: AIReplyChainInput): Promise<AIReplyChainOutput> {
+    const config: BaseCallbackConfig = {
+      tags: ['ai-reply'],
+      metadata: { 
+        project: process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies',
+        runName: `reply-${input.ticketId}`,
+        ticketId: input.ticketId
+      }
+    }
+
     try {
-      const response = await this.chain.invoke(input, {
-        tags: ['ai-reply'],
-        metadata: { 
-          project: process.env.LANGCHAIN_PROJECT || 'autocrm-ticket-replies',
-          runName: `reply-${input.ticketId}`,
-          ticketId: input.ticketId
-        }
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Operation timed out')), this.timeout)
       })
 
-      // Convert newlines to HTML paragraphs for proper display
-      const formattedReply = response
-        .split('\n\n')
-        .map((paragraph: string) => `<p>${paragraph.replace(/\n/g, '<br />')}</p>`)
-        .join('\n')
+      const formattedReply = await Promise.race([
+        this.chain.invoke(input, config),
+        timeoutPromise
+      ])
 
       return {
         reply: formattedReply,
-        confidence: 0.95, // TODO: Implement proper confidence scoring
+        confidence: 0.95,
         usedDocs: (input.relevantDocs || []).map(doc => doc.url).filter((url): url is string => url !== undefined),
         modelName: this.model.modelName
       }
     } catch (error) {
       console.error('Error generating AI reply:', error)
-      throw error
+      
+      return {
+        reply: '<p>I apologize, but I was unable to generate a response at this time. Please try again.</p>',
+        confidence: 0,
+        usedDocs: [],
+        modelName: this.model.modelName
+      }
     }
   }
 } 
